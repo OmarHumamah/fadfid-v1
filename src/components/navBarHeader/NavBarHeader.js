@@ -7,6 +7,7 @@ import Nav from "react-bootstrap/Nav";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Stack from "react-bootstrap/Stack";
 import Settings from "../settings/Settings";
+import LogoutButton from "../login/LogoutButton";
 
 export default function NavBarHeader(props) {
   const [showSettings, setShowSettings] = useState(false);
@@ -41,17 +42,19 @@ export default function NavBarHeader(props) {
                 <NavDropdown.Item>
                   <Link to="/profile">Profile</Link>
                 </NavDropdown.Item>
-                <NavDropdown.Item ><Link onClick={()=>setShowSettings(true)}>Settings</Link></NavDropdown.Item>
+                <NavDropdown.Item>
+                  <Link onClick={() => setShowSettings(true)}>Settings</Link>
+                </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item>
-                  <Button onClick={() => props.logout(false)}>Logout</Button>
+                  <LogoutButton />
                 </NavDropdown.Item>
               </NavDropdown>
             </Nav>
           </div>
         </Stack>
       </Container>
-        <Settings show={showSettings} handleShow={setShowSettings}/>
+      <Settings show={showSettings} handleShow={setShowSettings} />
       <nav></nav>
     </div>
   );

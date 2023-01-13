@@ -1,19 +1,21 @@
-import React from "react";
+// import React, {useContext} from "react";
 import { Container } from "react-bootstrap";
-import profile from "../../assets/profile.png";
-import Post from "../posts/Post";
+// import Post from "../posts/Post";
 import ProfileCard from "./ProfileCard";
+// import { SettingContext } from "../../context/Context";
+
 
 export default function Profile() {
+  // const {user ,posts} = useContext( SettingContext )
+  // const userPosts =  will get filtered post from DB based on username
   return (
     <div>
       <Container>
         <ProfileCard />
       </Container>
       <Container>
-        <Post />
+      {/* {userPosts.map(post => <Post content={post}/>)} */}
       </Container>
-      <img src={profile} />
     </div>
   );
 }

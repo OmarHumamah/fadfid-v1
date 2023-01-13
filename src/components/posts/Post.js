@@ -12,9 +12,8 @@ import {
 import { Link } from "react-router-dom";
 import ImgModal from "./ImgModal";
 
-export default function Post() {
-  const img = "https://via.placeholder.com/1280x720.png";
-  const imgF = undefined;
+export default function Post(props) {
+  const img = props.content.picture;
   const cRef = useRef(null)
   const [imgModal, setImgModal] = useState(false)
   return (
@@ -26,20 +25,19 @@ export default function Post() {
             <Image
                     roundedCircle
                     width="40 rem"
-                    src="https://thumbs.dreamstime.com/b/anonymous-business-man-profile-picture-white-background-57594504.jpg"
-                  /> USER NAME
+                    src={props.content.userPic}
+                  /> {props.content.userName}
             </Card.Title>
             <Card.Text className="d-flex justify-content-between align-items-start">
-              Some quick example text to build on the card title and make up the
-              bulk of the card's content.
+             {props.content.text}
             </Card.Text>
             {img && <Card.Img onClick={()=>setImgModal(true)} src={img} />}
             <Stack direction="horizontal" gap={2}>
               <div className="bg-light border">
-                like <Badge>10</Badge>
+                likes <Badge>{props.content.likes}</Badge>
               </div>
               <div className="bg-light border ms-auto">
-                <Badge>4</Badge> comments
+                <Badge>{props.content.comments.length}</Badge> comments
               </div>
             </Stack>
             <hr />
