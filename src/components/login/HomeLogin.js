@@ -1,6 +1,5 @@
 import React from "react";
 import { Navbar, Container, Carousel } from "react-bootstrap";
-import homePageLogin from "../../assets/opening.png";
 import LoginButton from "./LoginButton";
 
 export default function HomeLogin(props) {
