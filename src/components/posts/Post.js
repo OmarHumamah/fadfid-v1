@@ -30,12 +30,11 @@ export default function Post(props) {
     deletePic,
     updatePrivacy,
   } = useContext(SettingContext);
-  const email = props.content.email;
-  // const takePic = allUsers.find(user => user.email === email ).pic
-  // console.log(email,takePic);
+
+  const userId = allUsers.find((u) => u.subId === user.sub);
+  const postOwner = allUsers.find((u) => u.subId === props.content.subId);
+
   const img = props.content.picture;
-  const anonymousPic =
-    "https://friconix.com/png/fi-cnluxx-anonymous-user-circle.png";
   const cRef = useRef(null);
   const [imgModal, setImgModal] = useState(false);
   const [newComment, setNewComment] = useState("");
@@ -62,9 +61,9 @@ export default function Post(props) {
   const deletePostHandler = () => {
     deletePost(props.content.id);
     props.content.pictureName &&
-      deletePic.deletePic(
+      deletePic(
         props.content.pictureName,
-        props.content.userName,
+        props.content.subId,
         "post's_images"
       );
     // console.log("post deleted")
@@ -81,22 +80,34 @@ export default function Post(props) {
   };
   return (
     <div>
+      {/* {console.log(allUsers[1], user.sub)} */}
       <Container>
         <Card>
           <Card.Body>
             <Card.Title className="d-flex align-items-start">
-              <Image
-                roundedCircle
-                width="40 rem"
-                src={
-                  allUsers.find((user) => user.email === email)
-                    ? allUsers.find((user) => user.email === email).pic
-                    : props.content.userPic
-                }
-              />
-              <p>To {props.content.privacy}:</p>
-              {props.content.userName}:
-              {user.email === props.content.email && (
+              <Link
+                to={`/${
+                  userId&&userId.userName === postOwner.userName
+                    ? "profile"
+                    : postOwner.userName
+                }`}
+              >
+                <Image
+                  roundedCircle
+                  width="40 rem"
+                  src={
+                    userId&&userId.userName === postOwner.userName
+                      ? userId.pic
+                      : postOwner.pic
+                  }
+                />
+                <p>To {props.content.privacy}:</p>
+                {userId&&userId.userName === postOwner.userName
+                  ? `${userId.firstName} ${userId.lastName}`
+                  : `${postOwner.firstName} ${postOwner.lastName}`}
+                :
+              </Link>
+              {user.sub === props.content.subId && (
                 <Dropdown>
                   <Dropdown.Toggle
                     variant="outline-secondary"
@@ -138,7 +149,9 @@ export default function Post(props) {
                     onClick={(e) => setPrivacy(e.target.value)}
                   />
                   <Button onClick={() => privacySubmit()}>Save</Button>
-                  <Button variant="secondary" onClick={() => privacyCancel()}>Cancel</Button>
+                  <Button variant="secondary" onClick={() => privacyCancel()}>
+                    Cancel
+                  </Button>
                 </div>
               </Modal>
             </Card.Title>
@@ -153,7 +166,10 @@ export default function Post(props) {
                 overlay={
                   <Tooltip>
                     {props.content.likes.map((like, n) => (
-                      <p key={n}>{like.liker}</p>
+                      <p key={n}>
+                        {allUsers.find((u) => u.subId === like.id).firstName}{" "}
+                        {allUsers.find((u) => u.subId === like.id).lastName}
+                      </p>
                     ))}
                   </Tooltip>
                 }
@@ -171,7 +187,7 @@ export default function Post(props) {
             <Stack direction="horizontal" gap={2}>
               <div>
                 {!props.content.likes.some(
-                  (liker) => liker.email === user.email
+                  (liker) => liker.id === user.sub
                 ) ? (
                   <Button
                     onClick={() => updateLike(props.content, user)}
@@ -206,13 +222,7 @@ export default function Post(props) {
                   <Image
                     roundedCircle
                     width="35 rem"
-                    src={
-                      allUsers
-                        ? allUsers.find((u) => u.email === user.email)
-                          ? allUsers.find((u) => u.email === user.email).pic
-                          : user.picture
-                        : user.pic
-                    }
+                    src={userId&&allUsers.find((u) => u.subId === user.sub).pic}
                   />
                   <Form.Control
                     ref={cRef}
@@ -241,24 +251,31 @@ export default function Post(props) {
                     className="d-flex justify-content-between align-items-start"
                   >
                     <div className="ms-2 me-auto">
-                      <p className="fw-bold">
-                        <Image
-                          roundedCircle
-                          width="35 rem"
-                          src={
-                            allUsers
-                              ? allUsers.find(
-                                  (user) => user.email === comment.email
-                                )
-                                ? allUsers.find(
-                                    (user) => user.email === comment.email
-                                  ).pic
-                                : anonymousPic
-                              : anonymousPic
-                          }
-                        />
-                        {comment.commenter}:{" "}
-                      </p>
+                      <Link
+                        to={`/${
+                          userId&&userId.subId === comment.id
+                            ? "profile"
+                            : allUsers.find((u) => u.subId === comment.id)
+                                .userName
+                        }`}
+                      >
+                        <p className="fw-bold">
+                          <Image
+                            roundedCircle
+                            width="35 rem"
+                            src={
+                              allUsers.find(
+                                (user) => user.subId === comment.id
+                              ).pic
+                            }
+                          />
+                          {allUsers.find(
+                                (user) => user.subId === comment.id
+                              ).firstName}{" "}{allUsers.find(
+                                (user) => user.subId === comment.id
+                              ).lastName}:
+                        </p>
+                      </Link>
                       {!(commentEditId === comment.time) && (
                         <p>{comment.text}</p>
                       )}
@@ -283,7 +300,7 @@ export default function Post(props) {
                       )}
                       {!(commentEditId === comment.time) && (
                         <div>
-                          {comment.email === user.email && (
+                          {comment.id === user.sub && (
                             <Button
                               variant="outline-secondary"
                               onClick={() =>
@@ -294,8 +311,8 @@ export default function Post(props) {
                             </Button>
                           )}
 
-                          {(comment.email === user.email ||
-                            props.content.email === user.email) && (
+                          {(comment.id === user.sub ||
+                            props.content.subId === user.sub) && (
                             <Button
                               onClick={() =>
                                 deleteComment(props.content, comment)
@@ -309,7 +326,7 @@ export default function Post(props) {
                       )}
 
                       <p>{comment.time}</p>
-                      {comment.editTime && <p>Edited at:{comment.time}</p>}
+                      {comment.editTime && <p>Edited at:{comment.editTime}</p>}
                     </div>
                   </ListGroup.Item>
                 ))}
