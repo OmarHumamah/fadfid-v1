@@ -25,8 +25,16 @@ export default function PostForm() {
     allUsers,
     uploadProgress,
   } = useContext(SettingContext);
+
+  // const userC = allUsers.find((u) => u.email === user.email);
+  const userId = allUsers.find((u) => u.subId === user.sub);
+
+  // useEffect(() => {
+  //   getAllUsers()
+  // }, [])
+
   const [showFormOfPost, setShowFormOfPost] = useState(false);
-  const [postedModel, setPostedModel] = useState(false)
+  const [postedModel, setPostedModel] = useState(false);
   const [text, setText] = useState(null);
   const [picture, setPicture] = useState("");
   const [privacy, setPrivacy] = useState("All");
@@ -34,9 +42,8 @@ export default function PostForm() {
   const [pictureName, setPictureName] = useState(null);
   const [progress, setProgress] = useState(false);
   const post = {
-    userName: user.name,
-    userPic: user.picture,
-    email: user.email,
+    userName: userId && userId.userName,
+    subId: user.sub,
     likes: [],
     comments: [],
     postTime,
@@ -47,24 +54,26 @@ export default function PostForm() {
   };
   const postHandler = () => {
     setPostTime(timeStamp());
-    createPost(post);
+    setTimeout(() => {
+      createPost(post);
+    }, 1000);
     setShowFormOfPost(false);
-    setPostedModel(true)
+    setPostedModel(true);
   };
 
   const discardPostHandler = () => {
-    pictureName && deletePic.deletePic(pictureName, user.name, "post's_images");
+    pictureName && deletePic(pictureName, userId.subId, "post's_images");
     window.location.reload(true);
   };
 
   const deleteSelectedPic = () => {
-    deletePic.deletePic(pictureName, user.name, "post's_images");
+    deletePic(pictureName, userId.subId, "post's_images");
     setPicture("");
     setPictureName(null);
     setProgress(false);
   };
   const uploadImgHandler = (e) => {
-    uploadPostsImg(e.target.files[0], user.name, setPicture, setPictureName);
+    uploadPostsImg(e.target.files[0], userId.subId, setPicture, setPictureName);
     setProgress(true);
   };
   return (
@@ -74,18 +83,11 @@ export default function PostForm() {
           <Row>
             <Col xs={2}>
               <Form.Group className="mb-3">
-                <Link to="/profile">
+                <Link to={`/profile`}>
                   <Image
                     roundedCircle
                     width="50 rem"
-                    src={
-                      allUsers
-                        ? allUsers.find((user) => user.email === post.email)
-                          ? allUsers.find((user) => user.email === post.email)
-                              .pic
-                          : user.picture
-                        : user.pic
-                    }
+                    src={userId && userId.pic}
                   />
                 </Link>
               </Form.Group>
@@ -94,7 +96,9 @@ export default function PostForm() {
               <Form.Group className="mb-3">
                 <Form.Control
                   onClick={() => setShowFormOfPost(true)}
-                  placeholder={`what in your heart, ${user.given_name}?`}
+                  placeholder={`what in your heart, ${
+                    userId && userId.firstName
+                  }?`}
                 />
               </Form.Group>
             </Col>
@@ -129,20 +133,14 @@ export default function PostForm() {
                       <Image
                         roundedCircle
                         width="50 rem"
-                        src={
-                          allUsers
-                            ? allUsers.find((user) => user.email === post.email)
-                              ? allUsers.find(
-                                  (user) => user.email === post.email
-                                ).pic
-                              : user.picture
-                            : user.pic
-                        }
+                        src={userId && userId.pic}
                       />
                     </Link>
                   </Col>
                   <Col>
-                    <h6>{user.name}</h6>
+                    <h6>{`${userId && userId.firstName} ${
+                      userId && userId.lastName
+                    }`}</h6>
                     <DropdownButton
                       onClick={(e) => setPrivacy(e.target.innerText)}
                       title={privacy}
@@ -175,7 +173,9 @@ export default function PostForm() {
               <Form.Control
                 onChange={(e) => setText(e.target.value)}
                 as="textarea"
-                placeholder={`what in your heart, ${user.given_name}?`}
+                placeholder={`what in your heart, ${
+                  userId && userId.firstName
+                }?`}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="photoLabel">
@@ -202,23 +202,21 @@ export default function PostForm() {
             {/* {console.log(post)}
             {console.log(posts)} */}
             <Button
-              disabled={
-                (!text && !pictureName)
-              }
+              disabled={!text && !pictureName}
               variant="primary"
               onClick={() => postHandler()}
             >
               Post
             </Button>
-            {console.log((uploadProgress >= 0 && uploadProgress < 99))}
+            {/* {console.log(uploadProgress >= 0 && uploadProgress < 99)} */}
             <Button variant="secondary" onClick={() => discardPostHandler()}>
               Discard
             </Button>
           </Form>
         </Modal.Body>
       </Modal>
-      <Modal show={postedModel} onHide={()=>setPostedModel(false)}>
-      <Modal.Header>
+      <Modal show={postedModel} onHide={() => setPostedModel(false)}>
+        <Modal.Header>
           <Modal.Title>Posted !</Modal.Title>
         </Modal.Header>
         <Modal.Body>Your post has been uploaded successfully.</Modal.Body>

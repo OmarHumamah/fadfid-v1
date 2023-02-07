@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Card,
   Container,
@@ -7,128 +7,115 @@ import {
   Modal,
   Button,
   Form,
+  CloseButton,
 } from "react-bootstrap";
 import { SettingContext } from "../../context/Context";
 
 export default function ProfileCard() {
-  const {
-    user,
-    userProfileVar,
-    profileHandler,
-    createUser,
-    updateUser,
-    // getUser,
-    getAllUsers,
-    allUsers,
-    userProfileConst,
-    uploadPic,
-    deletePic,
-    setUserProfileConst,
-  } = useContext(SettingContext);
+  const { user, updateUser, uploadPic, deletePic, allUsers } =
+    useContext(SettingContext);
+  const userId = allUsers.find((u) => u.subId === user.sub);
+
   const [openEdit, setOpenEdit] = useState(false);
-  const [addUser, setAddUser] = useState(true);
-  const [message, setMessage] = useState("");
+  const [addUser, setAddUser] = useState(false);
+  const [interest, setInterest] = useState("");
+  const [interestsArr, setInterestArr] = useState([]);
+  const [profilePic, setProfilePic] = useState(null);
+  const [profilePicName, setProfilePicName] = useState(null);
+  const [profileCover, setProfileCover] = useState(null);
+  const [profilePiCoverName, setProfileCoverName] = useState(null);
   const [uploadedPic, setUploadedPic] = useState(null);
   const [uploadedCover, setUploadedCover] = useState(null);
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    profileHandler.setInterests([...userProfileVar.interests, message]);
-    setMessage("");
+  let [updateObj, setUpdateObject] = useState({});
+  const editHandel = () => {
+    setOpenEdit(true);
   };
-
-  const deleteSelectedPic = () => {
-    deletePic.deletePic(deletePic.picTime, userProfileVar.userName, "users_pics_and_covers");
-    userProfileConst
-      ? profileHandler.setPic(userProfileConst.pic)
-      : profileHandler.setPic(user.picture);
-    setUploadedPic(null);
-  };
-
-  const deleteSelectedCover = () => {
-    deletePic.deletePic(deletePic.coverTime, userProfileVar.userName, "users_pics_and_covers");
-    userProfileConst
-      ? profileHandler.setCover(userProfileConst.cover)
-      : profileHandler.setCover("https://via.placeholder.com/900x200.png");
-    setUploadedCover(null);
-  };
-  const discardChanges = () => {
-    deletePic.picTime && deleteSelectedPic();
-    deletePic.coverTime && deleteSelectedCover();
-    setOpenEdit(false);
-    setUploadedCover(null);
-    setUploadedPic(null);
-  };
-  const picUploadHandler = () => {
-    uploadPic(
-      userProfileVar.pic,
-      profileHandler.setPic,
-      deletePic.setPicTime,
-      userProfileVar.userName
-    );
+  const picUploadHandler = (pic) => {
+    uploadPic(pic, setProfilePic, setProfilePicName, userId.subId);
     setUploadedPic(true);
   };
-
-  const coverUploadHandler = () => {
-    uploadPic(
-      userProfileVar.cover,
-      profileHandler.setCover,
-      deletePic.setCoverTime,
-      userProfileVar.userName
-    );
+  const deleteSelectedPic = () => {
+    deletePic(profilePicName, userId.subId, "users_pics_and_covers");
+    setProfilePic(null);
+    setUploadedPic(null);
+  };
+  const coverUploadHandler = (cover) => {
+    uploadPic(cover, setProfileCover, setProfileCoverName, userId.subId);
     setUploadedCover(true);
   };
-  useEffect(() => {
-    profileHandler.setUserName(user.name);
-    profileHandler.setFirstName(user.given_name);
-    profileHandler.setLastName(user.family_name);
-    profileHandler.setPic(user.picture);
-    profileHandler.setEmail(user.email);
-    profileHandler.setLanguage(user.locale);
-    getAllUsers();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const editHandel = (userC) => {
-    setOpenEdit(true);
-    while (userC) {
-      profileHandler.setPic(userC.pic);
-      profileHandler.setCover(userC.cover);
-      profileHandler.setBio(userC.bio);
-      profileHandler.setBirthday(userC.birthday);
-      profileHandler.setGender(userC.gender);
-      profileHandler.setInterests(userC.interests);
+  const deleteSelectedCover = () => {
+    deletePic(profilePiCoverName, userId.subId, "users_pics_and_covers");
+    setProfileCover(null);
+    setUploadedCover(null);
+  };
+  const addInterest = (i) => {
+    // console.log(i);
+    interestsArr.push(i);
+    // console.log([...userId.interests, ...interestsArr]);
+    updateObj = {
+      ...updateObj,
+      interests: [...userId.interests, ...interestsArr],
+    };
+    setInterest("");
+    // console.log(updateObj);
+    setUpdateObject(updateObj);
+  };
+  const deleteInterest = (arr, n) => {
+    // displayInterestsArr.pop()
+    console.log(n);
+    // console.log(i)
+    // setInterestArr(
+    // interestsArr.filter((x) => i !== x)
+    arr.splice(n, 1);
+    // )
+    updateObj = {
+      ...updateObj,
+      interests: [...userId.interests, ...interestsArr],
+    };
+    // let x = {interests: arr };
+    setUpdateObject(updateObj);
+    console.log(updateObj);
+    // updateUser(userId.id, updateObj);
+  };
+  const discardChanges = () => {
+    profilePic && deleteSelectedPic();
+    profileCover && deleteSelectedCover();
+    setOpenEdit(false);
+    setUploadedCover(null);
+    setUploadedPic(null);
+    setUpdateObject({});
+    window.location.reload(!(profilePic&&profileCover))
+  };
+  const updateHandler = () => {
+    while (typeof profilePic === "string") {
+      updateObj = {
+        ...updateObj,
+        pic: profilePic,
+        picName: profilePicName,
+      };
+      setUpdateObject(updateObj);
       break;
     }
-  };
-
-  const createHandler = () => {
-    createUser(userProfileVar);
-    setAddUser(false);
-    setOpenEdit(false);
-  };
-
-  const updateHandler = () => {
-    updateUser(userProfileConst.id, userProfileVar);
-    setAddUser(false);
+    while (typeof profileCover === "string") {
+      updateObj = {
+        ...updateObj,
+        cover: profileCover,
+        coverName: profilePiCoverName,
+      };
+      setUpdateObject(updateObj);
+      break;
+    }
+    updateUser(userId.id, updateObj);
+    // console.log(userId.id, updateObj);
+    setAddUser(true);
     setOpenEdit(false);
   };
 
   return (
     <div>
-      {/* {console.log(userProfileConst)} */}
-      {/* {console.log(userProfileVar)} */}
-      {allUsers&&setUserProfileConst(allUsers.find((u) => u.email === user.email))}
       <Container>
         <Card>
-          <Card.Img
-            variant="top"
-            src={
-              userProfileConst
-                ? userProfileConst.cover
-                : "https://via.placeholder.com/900x200.png"
-            }
-          />
+          <Card.Img variant="top" src={userId && userId.cover} />
           <Card.Body>
             <Card.Title>
               <Stack direction="horizontal" gap={3}>
@@ -136,32 +123,28 @@ export default function ProfileCard() {
                   <Image
                     roundedCircle
                     width="120 rem"
-                    src={userProfileConst ? userProfileConst.pic : user.picture}
+                    src={userId && userId.pic}
                   />
                 </div>
                 <div>
                   <p>
-                    {userProfileConst ? userProfileConst.userName : user.name}
+                    {`${userId && userId.firstName} ${
+                      userId && userId.lastName
+                    }`}
                   </p>
-                  <p>{userProfileConst && userProfileConst.gender}</p>
+                  <p>{userId && userId.gender}</p>
                 </div>
               </Stack>
             </Card.Title>
-            <Card.Text>
-              {userProfileConst ? userProfileConst.bio : ""}
-            </Card.Text>
-            <Card.Text>
-              {userProfileConst ? userProfileConst.birthday : ""}
-            </Card.Text>
-            <Button onClick={() => editHandel(userProfileConst)}>
-              Edit profile
-            </Button>
+            <Card.Text>{userId && userId.bio}</Card.Text>
+            <Card.Text>{userId && userId.birthday}</Card.Text>
+            <Button onClick={() => editHandel()}>Edit profile</Button>
           </Card.Body>
         </Card>
-        {userProfileConst && (
+        {userId.interests && (
           <Card>
             <Stack direction="horizontal">
-              {userProfileConst.interests.map((i, n) => (
+              {userId.interests.map((i, n) => (
                 <div key={n} className="bg-light border">
                   {i}
                 </div>
@@ -177,73 +160,52 @@ export default function ProfileCard() {
               <Form.Group className="mb-3">
                 <Form.Label htmlFor="pic">Change profile picture</Form.Label>
                 <br />
-                <input
-                  disabled={uploadedPic}
-                  id="pPic"
-                  type="file"
-                  onChange={(e) => profileHandler.setPic(e.target.files[0])}
-                />
-                <Button
-                  disabled={uploadedPic}
-                  onClick={() => picUploadHandler()}
-                >
-                  confirm
-                </Button>
+                {!profilePic && (
+                  <input
+                    disabled={uploadedPic}
+                    id="pPic"
+                    type="file"
+                    onChange={(e) => picUploadHandler(e.target.files[0])}
+                  />
+                )}
+                <Image roundedCircle width="120 rem" src={profilePic} />
                 {uploadedPic && (
                   <Button
-                    disabled={typeof userProfileVar.pic !== "string"}
+                    disabled={typeof profilePic !== "string"}
                     onClick={() => deleteSelectedPic()}
                   >
-                    Delete
-                  </Button>
-                )}
-                {typeof userProfileVar.pic !== "string" && (
-                  <Button
-                    disabled={uploadedPic}
-                    onClick={() => profileHandler.setPic(userProfileConst.pic)}
-                  >
-                    deselect
+                    Deselect
                   </Button>
                 )}
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label htmlFor="pic">Change Cover picture</Form.Label>
                 <br />
-                <input
-                  disabled={uploadedCover}
-                  id="cPic"
-                  type="file"
-                  onChange={(e) => profileHandler.setCover(e.target.files[0])}
-                />
-                <Button
-                  disabled={uploadedCover}
-                  onClick={() => coverUploadHandler()}
-                >
-                  confirm
-                </Button>
+                {!profileCover && (
+                  <input
+                    disabled={uploadedCover}
+                    id="cPic"
+                    type="file"
+                    onChange={(e) => coverUploadHandler(e.target.files[0])}
+                  />
+                )}
+
+                <Image width={400} src={profileCover} />
                 {uploadedCover && (
                   <Button
-                    disabled={typeof userProfileVar.cover !== "string"}
+                    disabled={typeof profileCover !== "string"}
                     onClick={() => deleteSelectedCover()}
                   >
-                    Delete
-                  </Button>
-                )}
-                {typeof userProfileVar.cover !== "string" && (
-                  <Button
-                    disabled={uploadedCover}
-                    onClick={() =>
-                      profileHandler.setCover(userProfileConst.pic)
-                    }
-                  >
-                    deselect
+                    Deselect
                   </Button>
                 )}
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label htmlFor="bio">Bio</Form.Label>
                 <Form.Control
-                  onChange={(e) => profileHandler.setBio(e.target.value)}
+                  onChange={(e) =>
+                    setUpdateObject({ ...updateObj, bio: e.target.value })
+                  }
                   id="bio"
                   placeholder="Tell us more about your self ..."
                   as="textarea"
@@ -255,15 +217,10 @@ export default function ProfileCard() {
                 <input
                   id="birthday"
                   type="date"
-                  onChange={(event) =>
-                    profileHandler.setBirthday(event.target.value)
+                  onChange={(e) =>
+                    setUpdateObject({ ...updateObj, birthday: e.target.value })
                   }
                 />
-                {/* <input
-                  type="button"
-                  value="confirm"
-                  onClick={() => profileHandler.setBirthday(bd)}
-                /> */}
               </Form.Group>
               <Form.Group>
                 <Form.Label htmlFor="gender">Gender</Form.Label>
@@ -274,7 +231,9 @@ export default function ProfileCard() {
                   label="Male"
                   name="gender"
                   type="radio"
-                  onClick={(e) => profileHandler.setGender(e.target.value)}
+                  onClick={(e) =>
+                    setUpdateObject({ ...updateObj, gender: e.target.value })
+                  }
                 />
                 <Form.Check
                   inline
@@ -282,7 +241,9 @@ export default function ProfileCard() {
                   value="Female"
                   name="gender"
                   type="radio"
-                  onClick={(e) => profileHandler.setGender(e.target.value)}
+                  onClick={(e) =>
+                    setUpdateObject({ ...updateObj, gender: e.target.value })
+                  }
                 />
               </Form.Group>
               <Form.Group className="mb-3">
@@ -292,52 +253,49 @@ export default function ProfileCard() {
                     type="text"
                     id="message"
                     name="message"
-                    value={message}
-                    onChange={(event) => setMessage(event.target.value)}
+                    value={interest}
+                    onChange={(event) => setInterest(event.target.value)}
                   />
-                  <input type="submit" onClick={handleSubmit} value="Add" />
+                  <Button onClick={() => addInterest(interest)}>Add</Button>
                   <Stack direction="horizontal">
-                    {userProfileVar.interests.map((i, n) => (
+                    {userId.interests.map((i, n) => (
                       <div key={n} className="bg-light border">
-                        {i}
+                        <CloseButton
+                          onClick={() => deleteInterest(userId.interests, n)}
+                        />
+                        <p>{i}</p>
+                      </div>
+                    ))}
+                    {interestsArr.map((i, n) => (
+                      <div key={n} className="bg-light border">
+                        <CloseButton
+                          onClick={() => deleteInterest(interestsArr, n)}
+                        />
+                        <p>{i}</p>
                       </div>
                     ))}
                   </Stack>
                 </form>
               </Form.Group>
-
-              {!userProfileConst && (
-                <Button
-                  onClick={() => createHandler()}
-                  disabled={
-                    typeof userProfileVar.pic !== "string" ||
-                    typeof userProfileVar.cover !== "string"
-                  }
-                >
-                  Save
-                </Button>
-              )}
-              {userProfileConst && (
-                <Button
-                  disabled={
-                    typeof userProfileVar.pic !== "string" ||
-                    typeof userProfileVar.cover !== "string"
-                  }
-                  onClick={() => updateHandler()}
-                >
-                  Save
-                </Button>
-              )}
+              <Button
+                disabled={
+                  !profilePic &&
+                  !profileCover &&
+                  !updateObj.bio &&
+                  !updateObj.birthday &&
+                  !updateObj.gender &&
+                  !updateObj.interests
+                }
+                onClick={() => updateHandler()}
+              >
+                Save
+              </Button>
               <Button onClick={() => discardChanges()}>discard</Button>
             </fieldset>
-            {(typeof userProfileVar.pic !== "string" ||
-              typeof userProfileVar.cover !== "string") && (
-              <p>confirm or deselect selected pictures</p>
-            )}
           </div>
         </Modal.Body>
       </Modal>
-      <Modal show={!addUser}>
+      <Modal show={addUser}>
         <Modal.Header>
           <Modal.Title>Updated !</Modal.Title>
         </Modal.Header>

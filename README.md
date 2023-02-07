@@ -25,3 +25,13 @@
 7. : update user profile data. / **PS. it should me modal to confirm function and reload the page.** /
 8. : upload user profile pic & cover. /
 9. : posts work. /
+
+**profile routing**
+
+1. : navigate to user profile. /
+2. : send friend request and accept it. /
+
+
+
+**err if user logged in by email and password(fixed!!)**
+**err when display user info from userProfileConst(fixed!!)**

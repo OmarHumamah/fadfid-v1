@@ -4,16 +4,20 @@ import NavBarHeader from "./components/navBarHeader/NavBarHeader";
 import { Route, Routes } from "react-router-dom";
 import Wall from "./components/wall/Wall";
 import Profile from "./components/profile/Profile";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { SettingContext } from "./context/Context";
 import { Spinner } from "react-bootstrap";
-// import UserInfoModal from "./components/userInfoModal/UserInfoModal";
-
+import UserInfoModal from "./components/userInfoModal/UserInfoModal";
+import UserProfile from "./components/profile/UserProfile";
 
 function App() {
-  const { isLoading, isAuthenticated, } = useContext(SettingContext);
+  const { isLoading, isAuthenticated, getAllUsers, getPosts } =
+    useContext(SettingContext);
 
- 
+  useEffect(() => {
+    getAllUsers();
+    getPosts();
+  }, []);
 
   return (
     <>
@@ -24,12 +28,11 @@ function App() {
           {!isAuthenticated ? <HomeLogin /> : <NavBarHeader />}
           <Routes>
             <Route path="/" element={isAuthenticated && <Wall />} />
-            <Route
-              path="/profile"
-              element={isAuthenticated && <Profile />}
-            />
+            <Route path={`/profile`} element={isAuthenticated && <Profile />} />
+            <Route path="/:userName" element={<UserProfile/>} />
+            <Route path="/*" element={<UserProfile/>} />
           </Routes>
-          {/* <UserInfoModal/> */}
+          {isAuthenticated && <UserInfoModal />}
         </div>
       )}
     </>
