@@ -29,6 +29,7 @@ export default function Post(props) {
     deletePost,
     deletePic,
     updatePrivacy,
+    formatDate
   } = useContext(SettingContext);
 
   const userId = allUsers.find((u) => u.subId === user.sub);
@@ -43,7 +44,8 @@ export default function Post(props) {
   const [commentEdit, setCommentEdit] = useState("");
   const [showPrivacyF, setShowPrivacyF] = useState(false);
   const [privacy, setPrivacy] = useState(props.content.privacy);
-  const addCommentHandler = () => {
+  const addCommentHandler = (e) => {
+    e.preventDefault();
     addComment(props.content, user, newComment);
     setNewComment("");
   };
@@ -53,7 +55,8 @@ export default function Post(props) {
     setCommentEdit(text);
   };
 
-  const saveEditHandler = (n) => {
+  const saveEditHandler = (n, e) => {
+    e.preventDefault();
     editComment(props.content, n, commentEdit);
     setCommentEditId(null);
   };
@@ -78,55 +81,59 @@ export default function Post(props) {
     setPrivacy(props.content.privacy);
     setShowPrivacyF(false);
   };
+  
+
   return (
     <div>
-      {/* {console.log(allUsers[1], user.sub)} */}
-      <Container>
-        <Card>
-          <Card.Body>
-            <Card.Title className="d-flex align-items-start">
-              <Link
-                to={`/${
-                  userId&&userId.userName === postOwner.userName
-                    ? "profile"
-                    : postOwner.userName
-                }`}
-              >
-                <Image
-                  roundedCircle
-                  width="40 rem"
-                  src={
-                    userId&&userId.userName === postOwner.userName
-                      ? userId.pic
-                      : postOwner.pic
-                  }
-                />
-                <p>To {props.content.privacy}:</p>
-                {userId&&userId.userName === postOwner.userName
-                  ? `${userId.firstName} ${userId.lastName}`
-                  : `${postOwner.firstName} ${postOwner.lastName}`}
-                :
-              </Link>
-              {user.sub === props.content.subId && (
-                <Dropdown>
-                  <Dropdown.Toggle
-                    variant="outline-secondary"
-                    id="dropdown-basic"
-                  >
-                    . . .
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item onClick={() => deletePostHandler()}>
-                      Delete post
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={() => setShowPrivacyF(true)}>
-                      Change privacy
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              )}
-              <Modal show={showPrivacyF} onHide={() => setShowPrivacyF(false)}>
-                <div>
+      <Container fluid>
+        <Card id={props.content.id}>
+          <Card.Header  style={{ display: "flex" }}>
+            <a
+              style={{ display: "flex" }}
+              href={`/${
+                userId && userId.userName === postOwner.userName
+                  ? "profile"
+                  : postOwner.userName
+              }`}
+            >
+              <Image
+                roundedCircle
+                width="40 rem"
+                src={
+                  userId && userId.userName === postOwner.userName
+                    ? userId.pic
+                    : postOwner.pic
+                }
+              />
+              <p>To {props.content.privacy}:</p>
+              {userId && userId.userName === postOwner.userName
+                ? `${userId.firstName} ${userId.lastName}`
+                : `${postOwner.firstName} ${postOwner.lastName}`}
+              :
+            </a>
+            {formatDate(props.content.postTime)}
+            {user.sub === props.content.subId && (
+              <Dropdown>
+                <Dropdown.Toggle
+                  variant="outline-secondary"
+                  id="dropdown-basic"
+                >
+                  . . .
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={() => deletePostHandler()}>
+                    Delete post
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={() => setShowPrivacyF(true)}>
+                    Change privacy
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            )}
+            <Modal show={showPrivacyF} onHide={() => setShowPrivacyF(false)}>
+              <Card>
+                <Card.Header>Change Privacy</Card.Header>
+                <Card.Body>
                   <Form.Check
                     label="All"
                     value="All"
@@ -148,13 +155,18 @@ export default function Post(props) {
                     type="radio"
                     onClick={(e) => setPrivacy(e.target.value)}
                   />
+                </Card.Body>
+                <Card.Footer>
                   <Button onClick={() => privacySubmit()}>Save</Button>
                   <Button variant="secondary" onClick={() => privacyCancel()}>
                     Cancel
                   </Button>
-                </div>
-              </Modal>
-            </Card.Title>
+                </Card.Footer>
+              </Card>
+            </Modal>
+          </Card.Header>
+          <Card.Title className="d-flex align-items-start"></Card.Title>
+          <Card.Body>
             <Card.Text className="d-flex justify-content-between align-items-start">
               {props.content.text}
             </Card.Text>
@@ -186,9 +198,7 @@ export default function Post(props) {
             <hr />
             <Stack direction="horizontal" gap={2}>
               <div>
-                {!props.content.likes.some(
-                  (liker) => liker.id === user.sub
-                ) ? (
+                {!props.content.likes.some((liker) => liker.id === user.sub) ? (
                   <Button
                     onClick={() => updateLike(props.content, user)}
                     variant="outline-secondary"
@@ -222,22 +232,27 @@ export default function Post(props) {
                   <Image
                     roundedCircle
                     width="35 rem"
-                    src={userId&&allUsers.find((u) => u.subId === user.sub).pic}
+                    src={
+                      userId && allUsers.find((u) => u.subId === user.sub).pic
+                    }
                   />
-                  <Form.Control
-                    ref={cRef}
-                    className="me-auto"
-                    placeholder="Write a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                  />
-                  <Button
-                    disabled={newComment === ""}
-                    onClick={() => addCommentHandler()}
-                    variant="secondary"
-                  >
-                    Enter
-                  </Button>
+                  <form style={{ display: "flex" }}>
+                    <Form.Control
+                      ref={cRef}
+                      className="me-auto"
+                      placeholder="Write a comment..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                    />
+                    <Button
+                      disabled={newComment === ""}
+                      onClick={(e) => addCommentHandler(e)}
+                      variant="secondary"
+                      type="submit"
+                    >
+                      Enter
+                    </Button>
+                  </form>
                 </Stack>
               </Card.Body>
             </Card>
@@ -250,37 +265,48 @@ export default function Post(props) {
                     as="li"
                     className="d-flex justify-content-between align-items-start"
                   >
-                    <div className="ms-2 me-auto">
-                      <Link
-                        to={`/${
-                          userId&&userId.subId === comment.id
-                            ? "profile"
-                            : allUsers.find((u) => u.subId === comment.id)
-                                .userName
-                        }`}
-                      >
-                        <p className="fw-bold">
-                          <Image
-                            roundedCircle
-                            width="35 rem"
-                            src={
-                              allUsers.find(
-                                (user) => user.subId === comment.id
-                              ).pic
+                    <div style={{ display: "flex" }} className="ms-2 me-auto">
+                      <div>
+                        <a
+                          href={`/${
+                            userId && userId.subId === comment.id
+                              ? "profile"
+                              : allUsers.find((u) => u.subId === comment.id)
+                                  .userName
+                          }`}
+                        >
+                          <p className="fw-bold">
+                            <Image
+                              roundedCircle
+                              width="35 rem"
+                              src={
+                                allUsers.find(
+                                  (user) => user.subId === comment.id
+                                ).pic
+                              }
+                            />
+                            {
+                              allUsers.find((user) => user.subId === comment.id)
+                                .firstName
+                            }{" "}
+                            {
+                              allUsers.find((user) => user.subId === comment.id)
+                                .lastName
                             }
-                          />
-                          {allUsers.find(
-                                (user) => user.subId === comment.id
-                              ).firstName}{" "}{allUsers.find(
-                                (user) => user.subId === comment.id
-                              ).lastName}:
-                        </p>
-                      </Link>
+                            :
+                          </p>
+                        </a>
+                        <p>{formatDate(comment.time)}</p>
+                        {comment.editTime && (
+                          <p>Edited {formatDate(comment.editTime)}</p>
+                        )}
+                      </div>
+
                       {!(commentEditId === comment.time) && (
-                        <p>{comment.text}</p>
+                        <p style={{ padding: 30 }}>{comment.text}</p>
                       )}
                       {commentEditId === comment.time && (
-                        <div>
+                        <form>
                           <Form.Control
                             ref={cRef}
                             className="me-auto"
@@ -289,14 +315,21 @@ export default function Post(props) {
                             onChange={(e) => setCommentEdit(e.target.value)}
                           />
                           <div>
-                            <Button onClick={() => saveEditHandler(n)}>
+                            <Button
+                              disabled={
+                                commentEdit === "" ||
+                                commentEdit === comment.text
+                              }
+                              onClick={(e) => saveEditHandler(n, e)}
+                              type="submit"
+                            >
                               Save
                             </Button>
                             <Button onClick={() => setCommentEditId(null)}>
                               Cancel
                             </Button>
                           </div>
-                        </div>
+                        </form>
                       )}
                       {!(commentEditId === comment.time) && (
                         <div>
@@ -324,20 +357,17 @@ export default function Post(props) {
                           )}
                         </div>
                       )}
-
-                      <p>{comment.time}</p>
-                      {comment.editTime && <p>Edited at:{comment.editTime}</p>}
                     </div>
                   </ListGroup.Item>
                 ))}
             </ListGroup>
             {props.content.comments.length > 3 &&
               commentSlicer < props.content.comments.length && (
-                <Link onClick={() => setCommentSlicer(commentSlicer + 3)}>
+                <a onClick={() => setCommentSlicer(commentSlicer + 3)}>
                   Show more {props.content.comments.length - commentSlicer}{" "}
                   comment
                   {props.content.comments.length - commentSlicer > 1 && "s"}
-                </Link>
+                </a>
               )}
           </Card.Body>
         </Card>

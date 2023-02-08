@@ -168,7 +168,7 @@ export default function Show(props) {
     let comments = post.comments;
     let newComment = {
       id: user.sub,
-      time: timeStamp(),
+      time: new Date(),
       text: commentText,
     };
     const postDoc = doc(db, "posts", id);
@@ -181,18 +181,22 @@ export default function Show(props) {
     let id = post.id;
     let comments = post.comments;
     const postDoc = doc(db, "posts", id);
+    // const commentsArr = comments.filter(
+    //   (commentN) => commentN.id !== comment.id && commentN.time !== comment.time
+    // );
     const commentsArr = comments.filter(
-      (commentN) => commentN.id !== comment.id && commentN.time !== comment.time
+      (c) => !(c.time === comment.time && c.id === comment.id)
     );
     const newCommentsArr = { comments: commentsArr };
     await updateDoc(postDoc, newCommentsArr);
+    // console.log(newCommentsArr);
   };
   const editComment = async (post, n, commentEdit) => {
     let id = post.id;
     const postDoc = doc(db, "posts", id);
     let comments = post.comments;
     let editedComment = comments.splice(n, 1)[0];
-    let x = { ...editedComment, text: commentEdit, editTime: timeStamp() };
+    let x = { ...editedComment, text: commentEdit, editTime: new Date() };
     comments.splice(n, 0, x);
     let newCommentsArr = { comments };
     await updateDoc(postDoc, newCommentsArr);
@@ -214,11 +218,26 @@ export default function Show(props) {
     const newPrivacyState = { privacy: privacy };
     await updateDoc(postDoc, newPrivacyState);
   };
-  const acceptFriendReq =(id,arr)=>{
-    // let obj = {pending:arr.filter(u=>),
-    // friends:[]}
-    // console.log(id, );
-  }
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp.seconds * 1000);
+    const today = new Date();
+    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const timeStr = `${hours}:${minutes.toString().padStart(2, "0")}`;
+    if (date.toDateString() === today.toDateString()) {
+      return "Today at:" + timeStr;
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return "Yesterday at:" + timeStr;
+    } else {
+      return date.toDateString() + " at:" + timeStr;
+    }
+  };
+  // const acceptFriendReq =(id,arr)=>{
+  //   // let obj = {pending:arr.filter(u=>),
+  //   // friends:[]}
+  //   // console.log(id, );
+  // }
   const state = {
     isAuthenticated,
     isLoading,
@@ -243,6 +262,7 @@ export default function Show(props) {
     getAllUsers,
     uploadPic,
     deletePic,
+    formatDate,
   };
 
   return (
