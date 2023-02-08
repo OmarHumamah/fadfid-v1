@@ -13,13 +13,22 @@ import {
 import { Link } from "react-router-dom";
 import { SettingContext } from "../../context/Context";
 import LogoutButton from "../login/LogoutButton";
+import Search from "./Search";
 
 function NavBarHeader() {
-  const { allUsers, user, updateUser, getAllUsers } =
-    useContext(SettingContext);
+  const {
+    allUsers,
+    user,
+    updateUser,
+    getAllUsers,
+    getPosts,
+    posts,
+    formatDate,
+  } = useContext(SettingContext);
 
   useEffect(() => {
     getAllUsers();
+    getPosts();
   }, []);
 
   const userId = allUsers.find((u) => u.subId === user.sub);
@@ -63,23 +72,24 @@ function NavBarHeader() {
               placement="end"
             >
               <Offcanvas.Header closeButton>
-                <Offcanvas.Title id={`offcanvasNavbarLabel`}>
-                  <Image src={userId && userId.pic} roundedCircle width={40} />
-                  {`${userId && userId.firstName} ${userId && userId.lastName}`}
-                </Offcanvas.Title>
+                <a href="/profile">
+                  <Offcanvas.Title id={`offcanvasNavbarLabel`}>
+                    <Image
+                      src={userId && userId.pic}
+                      roundedCircle
+                      width={40}
+                    />
+                    {`${userId && userId.firstName} ${
+                      userId && userId.lastName
+                    }`}
+                  </Offcanvas.Title>
+                </a>
               </Offcanvas.Header>
               <Offcanvas.Body>
-                <Form className="d-flex">
-                  <Form.Control
-                    type="search"
-                    placeholder="Search"
-                    className="me-2"
-                    aria-label="Search"
-                  />
-                  <Button variant="outline-success">Search</Button>
-                </Form>
+                {posts && allUsers && (
+                  <Search posts={posts} userId={userId} allUsers={allUsers} formatDate={formatDate}/>
+                )}
                 <Nav className="justify-content-end flex-grow-1 pe-3">
-                  <Link to="/profile">Profile</Link>
                   <NavDropdown title="Friends" id={`offcanvasNavbarDropdown`}>
                     <NavDropdown
                       title={`All Friends (${userId && userId.friends.length})`}
@@ -93,8 +103,8 @@ function NavBarHeader() {
                         {userId &&
                           userId.friends.map((f, n) => (
                             <ListGroup.Item key={n}>
-                              <Link
-                                to={
+                              <a
+                                href={
                                   "/" +
                                   allUsers.find((u) => u.subId === f.id)
                                     .userName
@@ -114,7 +124,7 @@ function NavBarHeader() {
                                   allUsers.find((u) => u.subId === f.id)
                                     .lastName
                                 }`}
-                              </Link>
+                              </a>
                             </ListGroup.Item>
                           ))}
                       </ListGroup>
@@ -133,8 +143,8 @@ function NavBarHeader() {
                         {userId &&
                           userId.pendingFriendsReq.map((req, n) => (
                             <ListGroup.Item key={n}>
-                              <Link
-                                to={`/${
+                              <a
+                                href={`/${
                                   allUsers.find((u) => u.subId === req.id)
                                     .userName
                                 }`}
@@ -153,7 +163,7 @@ function NavBarHeader() {
                                   allUsers.find((u) => u.subId === req.id)
                                     .lastName
                                 }`}
-                              </Link>
+                              </a>
                               <hr />
                               <Button
                                 onClick={() => acceptFriendReqHandler(req)}
@@ -182,30 +192,41 @@ function NavBarHeader() {
                           .filter(
                             (u) => !userId.friends.some((f) => f.id === u.subId)
                           )
-                          .map((u) => (
-                            <ListGroup.Item>
-                              <Link to={`/${u.userName}`}>
+                          .map((u, n) => (
+                            <ListGroup.Item key={n}>
+                              <a href={`/${u.userName}`}>
                                 <Image src={u.pic} roundedCircle width={40} />
                                 {`${u.firstName} ${u.lastName}`}
-                              {!userId.pendingFriendsReq.find(
-                                (x) => x.id === u.subId
-                              ) && <><p>Send Friend request!</p>
-                              </>}
-                              {userId.pendingFriendsReq.find(
-                                (x) => x.id === u.subId
-                              ) && (
-                                <>
-                                  <p>{`${u.firstName} has sent you a friend request!`}</p>
-                                </>
-                              )}
-                              </Link>
+                                {!userId.pendingFriendsReq.find(
+                                  (x) => x.id === u.subId
+                                ) && (
+                                  <>
+                                    <p>Send Friend request!</p>
+                                  </>
+                                )}
+                                {userId.pendingFriendsReq.find(
+                                  (x) => x.id === u.subId
+                                ) && (
+                                  <>
+                                    <p>{`${u.firstName} has sent you a friend request!`}</p>
+                                  </>
+                                )}
+                              </a>
                               <hr />
                             </ListGroup.Item>
                           ))}
                       </ListGroup>
                     </NavDropdown>
                   </NavDropdown>
-                  <NavDropdown title="Settings"></NavDropdown>
+                  <NavDropdown title="Settings">
+                    <p>Light / Dark mood</p>
+                    <p>anonymous</p>
+                    <p>language</p>
+                    <p>Hide friends</p>
+                    <p>Change name</p>
+                    <Button variant="secondary">Close</Button>
+                    <Button variant="primary">Save Changes</Button>
+                  </NavDropdown>
                   <LogoutButton />
                 </Nav>
               </Offcanvas.Body>

@@ -10,7 +10,7 @@ import {
 import { useParams } from "react-router-dom";
 import { SettingContext } from "../../context/Context";
 import Post from "../posts/Post";
-export default function UserProfile() {
+export default function UserProfile(props) {
   const { getAllUsers, allUsers, posts, getPosts, updateUser, user } =
     useContext(SettingContext);
   const { userName } = useParams();
@@ -44,18 +44,14 @@ export default function UserProfile() {
       friends: [...userProfileId.friends, { id: userId.subId }],
     });
   };
-  const unFriendHandler = ()=>{
+  const unFriendHandler = () => {
     updateUser(userId.id, {
-      friends: userId.friends.filter(
-        (u) => u.id !== userProfileId.subId
-      ),
-    })
+      friends: userId.friends.filter((u) => u.id !== userProfileId.subId),
+    });
     updateUser(userProfileId.id, {
-      friends: userProfileId.friends.filter(
-        (u) => u.id !== userId.subId
-      ),
-    })
-  }  
+      friends: userProfileId.friends.filter((u) => u.id !== userId.subId),
+    });
+  };
   const isISentHim = userProfileId.pendingFriendsReq.some(
     (u) => u.id === user.sub
   );
@@ -86,6 +82,7 @@ export default function UserProfile() {
             </Card.Title>
             <Card.Text>{userProfileId.bio}</Card.Text>
             <Card.Text>{userProfileId.birthday}</Card.Text>
+            <Card.Text onClick={()=>props.setFriendsModal({show:true, friends: userProfileId.friends})}>{`Friends (${userProfileId && userProfileId.friends.length})`}</Card.Text>
           </Card.Body>
           <Card.Footer>
             {isHeMyFriend
@@ -121,9 +118,9 @@ export default function UserProfile() {
                 </Button>
               </ButtonGroup>
             )}
-            { isHeMyFriend&&
-              <Button onClick={()=>unFriendHandler()}>Unfriend</Button>
-              }
+            {isHeMyFriend && (
+              <Button onClick={() => unFriendHandler()}>Unfriend</Button>
+            )}
           </Card.Footer>
         </Card>
         <Card>
@@ -140,6 +137,13 @@ export default function UserProfile() {
       <Container>
         {posts
           .filter((post) => post.userName === userName)
+          .sort((a, b) => b.postTime - a.postTime)
+          .filter((p) => p.privacy !== "Private")
+          .filter((p) =>
+            p.privacy === "Friends"
+              ? userId.friends.find((u) => u.id === p.subId)
+              : p.privacy === "All"
+          )
           .map((post, n) => (
             <Post key={n} content={post} />
           ))}

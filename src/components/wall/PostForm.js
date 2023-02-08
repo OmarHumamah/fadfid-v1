@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Form,
@@ -52,20 +52,20 @@ export default function PostForm() {
     picture,
     pictureName,
   };
+
+  useEffect(() => {
+    setPostTime(new Date());
+  }, [text, picture, timeStamp]);
   const postHandler = () => {
-    setPostTime(timeStamp());
-    setTimeout(() => {
-      createPost(post);
-    }, 1000);
+    createPost(post);
+    // console.log(post);
     setShowFormOfPost(false);
     setPostedModel(true);
   };
-
   const discardPostHandler = () => {
     pictureName && deletePic(pictureName, userId.subId, "post's_images");
     window.location.reload(true);
   };
-
   const deleteSelectedPic = () => {
     deletePic(pictureName, userId.subId, "post's_images");
     setPicture("");
@@ -73,8 +73,18 @@ export default function PostForm() {
     setProgress(false);
   };
   const uploadImgHandler = (e) => {
-    uploadPostsImg(e.target.files[0], userId.subId, setPicture, setPictureName);
-    setProgress(true);
+    let file = e.target.files[0];
+    if (
+      file.type === "image/png" ||
+      file.type === "image/jpeg" ||
+      file.type === "image/gif"
+    ) {
+      console.log("ok to upload: " + file.name);
+      uploadPostsImg(file, userId.subId, setPicture, setPictureName);
+      setProgress(true);
+    } else {
+      alert("Only images are allowed");
+    }
   };
   return (
     <div>
@@ -184,6 +194,7 @@ export default function PostForm() {
             {!progress && (
               <input
                 type="file"
+                accept="image/x-png,image/gif,image/jpeg"
                 name="postPhoto"
                 onChange={(e) => uploadImgHandler(e)}
               />

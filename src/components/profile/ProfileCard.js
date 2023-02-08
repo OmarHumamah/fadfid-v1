@@ -11,7 +11,7 @@ import {
 } from "react-bootstrap";
 import { SettingContext } from "../../context/Context";
 
-export default function ProfileCard() {
+export default function ProfileCard(props) {
   const { user, updateUser, uploadPic, deletePic, allUsers } =
     useContext(SettingContext);
   const userId = allUsers.find((u) => u.subId === user.sub);
@@ -31,8 +31,13 @@ export default function ProfileCard() {
     setOpenEdit(true);
   };
   const picUploadHandler = (pic) => {
-    uploadPic(pic, setProfilePic, setProfilePicName, userId.subId);
-    setUploadedPic(true);
+    if(pic.type ==='image/jpeg')
+    {
+      uploadPic(pic, setProfilePic, setProfilePicName, userId.subId);
+      setUploadedPic(true);
+    }else {
+      alert("Only files with the file extension jpeg are allowed")
+    }
   };
   const deleteSelectedPic = () => {
     deletePic(profilePicName, userId.subId, "users_pics_and_covers");
@@ -40,16 +45,21 @@ export default function ProfileCard() {
     setUploadedPic(null);
   };
   const coverUploadHandler = (cover) => {
-    uploadPic(cover, setProfileCover, setProfileCoverName, userId.subId);
-    setUploadedCover(true);
+    if(cover.type ==='image/jpeg'){
+      uploadPic(cover, setProfileCover, setProfileCoverName, userId.subId);
+      setUploadedCover(true);
+    }else {
+      alert("Only files with the file extension jpeg are allowed")
+    }
   };
   const deleteSelectedCover = () => {
     deletePic(profilePiCoverName, userId.subId, "users_pics_and_covers");
     setProfileCover(null);
     setUploadedCover(null);
   };
-  const addInterest = (i) => {
+  const addInterest = (i,e) => {
     // console.log(i);
+    e.preventDefault()
     interestsArr.push(i);
     // console.log([...userId.interests, ...interestsArr]);
     updateObj = {
@@ -138,6 +148,7 @@ export default function ProfileCard() {
             </Card.Title>
             <Card.Text>{userId && userId.bio}</Card.Text>
             <Card.Text>{userId && userId.birthday}</Card.Text>
+            <Card.Text onClick={()=>props.setFriendsModal({show:true, friends: userId.friends})}>{`Friends (${userId && userId.friends.length})`}</Card.Text>
             <Button onClick={() => editHandel()}>Edit profile</Button>
           </Card.Body>
         </Card>
@@ -164,6 +175,7 @@ export default function ProfileCard() {
                   <input
                     disabled={uploadedPic}
                     id="pPic"
+                    accept="image/x-png,image/gif,image/jpeg"
                     type="file"
                     onChange={(e) => picUploadHandler(e.target.files[0])}
                   />
@@ -185,6 +197,7 @@ export default function ProfileCard() {
                   <input
                     disabled={uploadedCover}
                     id="cPic"
+                    accept="image/x-png,image/gif,image/jpeg"
                     type="file"
                     onChange={(e) => coverUploadHandler(e.target.files[0])}
                   />
@@ -256,7 +269,8 @@ export default function ProfileCard() {
                     value={interest}
                     onChange={(event) => setInterest(event.target.value)}
                   />
-                  <Button onClick={() => addInterest(interest)}>Add</Button>
+                  <Button disabled={interest===""} type='submit' onClick={(e) => addInterest(interest,e)}>Add</Button>
+                </form>
                   <Stack direction="horizontal">
                     {userId.interests.map((i, n) => (
                       <div key={n} className="bg-light border">
@@ -275,7 +289,6 @@ export default function ProfileCard() {
                       </div>
                     ))}
                   </Stack>
-                </form>
               </Form.Group>
               <Button
                 disabled={

@@ -31,7 +31,12 @@
 1. : navigate to user profile. /
 2. : send friend request and accept it. /
 
+**Post display**
 
+1. : organize posts in wall and activate private, friends and all. /
+2. : sort posts by time. / 
+3. : organize posts in profile and userProfile, and activate private, friends and all./
 
+**err postTime**
 **err if user logged in by email and password(fixed!!)**
 **err when display user info from userProfileConst(fixed!!)**
