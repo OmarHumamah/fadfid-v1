@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import { SettingContext } from "../../context/Context";
 import LogoutButton from "../login/LogoutButton";
 import Search from "./Search";
+import Settings from "../settings/Settings";
 
 function NavBarHeader() {
   const {
@@ -61,6 +62,9 @@ function NavBarHeader() {
               {userId && userId.pendingFriendsReq.length > 0 && (
                 <p style={{ color: "red" }}>* You have friend requests</p>
               )}
+                {userId && userId.anonymous && (
+                  <p style={{ color: "red" }}>* You are in Anonymous mood</p>
+                )}
               <Navbar.Toggle
                 variant="primary"
                 aria-controls={`offcanvasNavbar`}
@@ -219,13 +223,7 @@ function NavBarHeader() {
                     </NavDropdown>
                   </NavDropdown>
                   <NavDropdown title="Settings">
-                    <p>Light / Dark mood</p>
-                    <p>anonymous</p>
-                    <p>language</p>
-                    <p>Hide friends</p>
-                    <p>Change name</p>
-                    <Button variant="secondary">Close</Button>
-                    <Button variant="primary">Save Changes</Button>
+                  {userId&& <Settings user={userId} updateUser={updateUser}/>}
                   </NavDropdown>
                   <LogoutButton />
                 </Nav>

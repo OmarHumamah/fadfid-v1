@@ -24,6 +24,8 @@ export default function PostForm() {
     uploadPostsImg,
     allUsers,
     uploadProgress,
+    maleAvatar,
+    femaleAvatar
   } = useContext(SettingContext);
 
   // const userC = allUsers.find((u) => u.email === user.email);
@@ -51,6 +53,7 @@ export default function PostForm() {
     text,
     picture,
     pictureName,
+    anonymous:userId && userId.anonymous,
   };
 
   useEffect(() => {
@@ -143,12 +146,14 @@ export default function PostForm() {
                       <Image
                         roundedCircle
                         width="50 rem"
-                        src={userId && userId.pic}
+                        src={
+                          userId && userId.anonymous?userId.gender==="Male"?maleAvatar:femaleAvatar: userId.pic}
                       />
                     </Link>
                   </Col>
                   <Col>
-                    <h6>{`${userId && userId.firstName} ${
+                    <h6>{ userId && userId.anonymous?'Anonymous Post':
+                    `${ userId.firstName} ${
                       userId && userId.lastName
                     }`}</h6>
                     <DropdownButton

@@ -37,6 +37,14 @@
 2. : sort posts by time. / 
 3. : organize posts in profile and userProfile, and activate private, friends and all./
 
+**Anonymous mood**
+
+1. : checkbox in settings. /
+2. : post and display post anonymously./
+3. : hide anonymous post in user profile. /
+4. : like anonymously. /
+5. : comment anonymously. /
+
 **err postTime**
 **err if user logged in by email and password(fixed!!)**
 **err when display user info from userProfileConst(fixed!!)**
