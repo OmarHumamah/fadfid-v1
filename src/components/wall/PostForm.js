@@ -15,25 +15,19 @@ import {
 } from "react-bootstrap";
 import { SettingContext } from "../../context/Context";
 
-export default function PostForm() {
+export default function PostForm(props) {
   const {
     user,
     timeStamp,
     deletePic,
     createPost,
     uploadPostsImg,
-    allUsers,
     uploadProgress,
     maleAvatar,
-    femaleAvatar
+    femaleAvatar,
   } = useContext(SettingContext);
 
-  // const userC = allUsers.find((u) => u.email === user.email);
-  const userId = allUsers.find((u) => u.subId === user.sub);
-
-  // useEffect(() => {
-  //   getAllUsers()
-  // }, [])
+  const userId = props.userId;
 
   const [showFormOfPost, setShowFormOfPost] = useState(false);
   const [postedModel, setPostedModel] = useState(false);
@@ -44,7 +38,7 @@ export default function PostForm() {
   const [pictureName, setPictureName] = useState(null);
   const [progress, setProgress] = useState(false);
   const post = {
-    userName: userId && userId.userName,
+    userName: userId.userName,
     subId: user.sub,
     likes: [],
     comments: [],
@@ -53,7 +47,7 @@ export default function PostForm() {
     text,
     picture,
     pictureName,
-    anonymous:userId && userId.anonymous,
+    anonymous: userId.anonymous,
   };
 
   useEffect(() => {
@@ -97,11 +91,7 @@ export default function PostForm() {
             <Col xs={2}>
               <Form.Group className="mb-3">
                 <Link to={`/profile`}>
-                  <Image
-                    roundedCircle
-                    width="50 rem"
-                    src={userId && userId.pic}
-                  />
+                  <Image roundedCircle width="50 rem" src={userId.pic} />
                 </Link>
               </Form.Group>
             </Col>
@@ -109,9 +99,7 @@ export default function PostForm() {
               <Form.Group className="mb-3">
                 <Form.Control
                   onClick={() => setShowFormOfPost(true)}
-                  placeholder={`what in your heart, ${
-                    userId && userId.firstName
-                  }?`}
+                  placeholder={`what in your heart, ${userId.firstName}?`}
                 />
               </Form.Group>
             </Col>
@@ -147,15 +135,21 @@ export default function PostForm() {
                         roundedCircle
                         width="50 rem"
                         src={
-                          userId && userId.anonymous?userId.gender==="Male"?maleAvatar:femaleAvatar: userId.pic}
+                          userId.anonymous
+                            ? userId.gender === "Male"
+                              ? maleAvatar
+                              : femaleAvatar
+                            : userId.pic
+                        }
                       />
                     </Link>
                   </Col>
                   <Col>
-                    <h6>{ userId && userId.anonymous?'Anonymous Post':
-                    `${ userId.firstName} ${
-                      userId && userId.lastName
-                    }`}</h6>
+                    <h6>
+                      {userId.anonymous
+                        ? "Anonymous Post"
+                        : `${userId.firstName} ${userId.lastName}`}
+                    </h6>
                     <DropdownButton
                       onClick={(e) => setPrivacy(e.target.innerText)}
                       title={privacy}
@@ -188,9 +182,7 @@ export default function PostForm() {
               <Form.Control
                 onChange={(e) => setText(e.target.value)}
                 as="textarea"
-                placeholder={`what in your heart, ${
-                  userId && userId.firstName
-                }?`}
+                placeholder={`what in your heart, ${userId.firstName}?`}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="photoLabel">

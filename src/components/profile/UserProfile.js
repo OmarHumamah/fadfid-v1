@@ -19,6 +19,7 @@ export default function UserProfile(props) {
   useEffect(() => {
     getAllUsers();
     getPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sendFriendReq = () => {

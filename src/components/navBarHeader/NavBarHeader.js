@@ -3,7 +3,6 @@ import {
   Image,
   Button,
   Container,
-  Form,
   Nav,
   Navbar,
   NavDropdown,
@@ -30,6 +29,7 @@ function NavBarHeader() {
   useEffect(() => {
     getAllUsers();
     getPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const userId = allUsers.find((u) => u.subId === user.sub);

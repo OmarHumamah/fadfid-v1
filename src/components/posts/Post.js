@@ -13,7 +13,6 @@ import {
   Dropdown,
   Modal,
 } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { SettingContext } from "../../context/Context";
 import ImgModal from "./ImgModal";
 
@@ -389,11 +388,11 @@ export default function Post(props) {
             </ListGroup>
             {props.content.comments.length > 3 &&
               commentSlicer < props.content.comments.length && (
-                <a onClick={() => setCommentSlicer(commentSlicer + 3)}>
+                <p onClick={() => setCommentSlicer(commentSlicer + 3)}>
                   Show more {props.content.comments.length - commentSlicer}{" "}
                   comment
                   {props.content.comments.length - commentSlicer > 1 && "s"}
-                </a>
+                </p>
               )}
           </Card.Body>
         </Card>

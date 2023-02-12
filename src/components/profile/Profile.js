@@ -5,16 +5,18 @@ import Post from "../posts/Post";
 import ProfileCard from "./ProfileCard";
 
 export default function Profile(props) {
-  const { posts, getPosts, user, getAllUsers } = useContext(SettingContext);
+  const { posts, getPosts, user, getAllUsers, allUsers } = useContext(SettingContext);
   useEffect(() => {
     getAllUsers();
     getPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const userId = allUsers.find((u) => u.subId === user.sub);
 
   return (
     <div>
       <Container>
-        <ProfileCard setFriendsModal={props.setFriendsModal}/>
+        <ProfileCard userId={userId} setFriendsModal={props.setFriendsModal}/>
       </Container>
       <Container>
         {posts
