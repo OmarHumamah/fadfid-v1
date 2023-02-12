@@ -8,6 +8,7 @@ export default function UserInfoModal() {
 
   useEffect(() => {
     getAllUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const userId = allUsers.find((u) => u.subId === user.sub);
 
@@ -21,7 +22,7 @@ export default function UserInfoModal() {
     let randomUserName = fAndLName
       ? newUser.firstName + newUser.lastName
       : user.nickname;
-    // console.log(allUsers.find((u) => u.userName === randomUserName));
+    // eslint-disable-next-line no-loop-func
     while (allUsers.find((u) => u.userName === randomUserName)) {
       randomUserName =
         randomUserName + Math.floor(Math.random() * (1000 - 1) + 1);
@@ -45,8 +46,11 @@ export default function UserInfoModal() {
     language: user.locale ? user.locale : "en-GB",
     gender,
     interests: [],
-    pendingFriendsReq:[],
+    pendingFriendsReq: [],
     friends: [],
+    anonymous: false,
+    mood: false,
+    friendsHide: false,
     pic: gender === "Male" ? maleAvatar : femaleAvatar,
     email: user.email,
     cover: "https://via.placeholder.com/900x200.png",
@@ -108,7 +112,6 @@ export default function UserInfoModal() {
             <br />
             <Form.Check
               inline
-              //   checked= {gender === "Male"}
               defaultChecked
               value="Male"
               label="Male"

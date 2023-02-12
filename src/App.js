@@ -8,10 +8,11 @@ import Profile from "./components/profile/Profile";
 import Wall from "./components/wall/Wall";
 import { SettingContext } from "./context/Context";
 import { Route, Routes } from "react-router-dom";
-import { Spinner, Modal, ListGroup, Image } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
+import FriendsModal from "./components/profile/FriendsModal";
 
 function App() {
-  const { isLoading, isAuthenticated, getAllUsers, getPosts, allUsers, user } =
+  const { isLoading, isAuthenticated, getAllUsers, getPosts, allUsers, user, posts } =
     useContext(SettingContext);
 
   const [friendsModal, setFriendsModal] = useState({
@@ -19,11 +20,10 @@ function App() {
     friends: [],
   });
 
-  useEffect(() => {}, []);
-
   useEffect(() => {
     getAllUsers();
     getPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -34,7 +34,7 @@ function App() {
         <div className="App">
           {!isAuthenticated ? <HomeLogin /> : <NavBarHeader />}
           <Routes>
-            <Route path="/" element={isAuthenticated && <Wall />} />
+            <Route path="/" element={isAuthenticated && <Wall posts={posts}/>} />
             <Route
               path={`/profile`}
               element={
@@ -47,39 +47,16 @@ function App() {
             />
           </Routes>
           {isAuthenticated && <UserInfoModal />}
+          {
+            <FriendsModal
+              friendsModal={friendsModal}
+              setFriendsModal={setFriendsModal}
+              allUsers={allUsers}
+              user={user}
+            />
+          }
         </div>
       )}
-      <Modal
-        show={friendsModal.show}
-        onHide={() => setFriendsModal({ show: false, friends: [] })}
-      >
-        <Modal.Header>Friends</Modal.Header>
-        <Modal.Body>
-          <ListGroup>
-            {friendsModal.friends.map((f, n) => (
-              <ListGroup.Item key={n}>
-                <a
-                  href={
-                    "/" + user &&
-                    allUsers.find((u) => u.subId === user.sub).subId === f.id
-                      ? "profile"
-                      : allUsers.find((u) => u.subId === f.id).userName
-                  }
-                >
-                  <Image
-                    src={allUsers.find((u) => u.subId === f.id).pic}
-                    roundedCircle
-                    width={40}
-                  />
-                  {`${allUsers.find((u) => u.subId === f.id).firstName} ${
-                    allUsers.find((u) => u.subId === f.id).lastName
-                  }`}
-                </a>
-              </ListGroup.Item>
-            ))}
-          </ListGroup>
-        </Modal.Body>
-      </Modal>
     </>
   );
 }

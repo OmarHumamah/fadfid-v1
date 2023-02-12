@@ -140,11 +140,13 @@ export default function Search(props) {
                       <Card>
                         <CardHeader style={{ display: "flex" }}>
                           <Image
-                            src={users.find((u) => u.subId === res.subId).pic}
+                            src={users.find((u) => u.subId === res.subId).anonymous? "":
+                              users.find((u) => u.subId === res.subId).pic}
                             roundedCircle
                             width={35}
                           />
-                          <p>{`${
+                          <p>{users.find((u) => u.subId === res.subId).anonymous? "Anonymous post":
+                          `${
                             users.find((u) => u.subId === res.subId).firstName
                           } ${
                             users.find((u) => u.subId === res.subId).lastName

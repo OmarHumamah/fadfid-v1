@@ -19,6 +19,7 @@ export default function UserProfile(props) {
   useEffect(() => {
     getAllUsers();
     getPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sendFriendReq = () => {
@@ -82,7 +83,7 @@ export default function UserProfile(props) {
             </Card.Title>
             <Card.Text>{userProfileId.bio}</Card.Text>
             <Card.Text>{userProfileId.birthday}</Card.Text>
-            <Card.Text onClick={()=>props.setFriendsModal({show:true, friends: userProfileId.friends})}>{`Friends (${userProfileId && userProfileId.friends.length})`}</Card.Text>
+            <Card.Text onClick={()=>!userProfileId.friendsHide&&props.setFriendsModal({show:true, friends: userProfileId.friends})}>{`Friends (${userProfileId && userProfileId.friends.length})`}</Card.Text>
           </Card.Body>
           <Card.Footer>
             {isHeMyFriend
@@ -137,6 +138,7 @@ export default function UserProfile(props) {
       <Container>
         {posts
           .filter((post) => post.userName === userName)
+          .filter((post) => !post.anonymous)
           .sort((a, b) => b.postTime - a.postTime)
           .filter((p) => p.privacy !== "Private")
           .filter((p) =>

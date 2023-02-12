@@ -12,14 +12,13 @@ import {
 import { SettingContext } from "../../context/Context";
 
 export default function ProfileCard(props) {
-  const { user, updateUser, uploadPic, deletePic, allUsers } =
-    useContext(SettingContext);
-  const userId = allUsers.find((u) => u.subId === user.sub);
+  const { updateUser, uploadPic, deletePic } = useContext(SettingContext);
+  const userId = props.userId;
 
   const [openEdit, setOpenEdit] = useState(false);
   const [addUser, setAddUser] = useState(false);
   const [interest, setInterest] = useState("");
-  const [interestsArr, setInterestArr] = useState([]);
+  const [interestsArr] = useState([]);
   const [profilePic, setProfilePic] = useState(null);
   const [profilePicName, setProfilePicName] = useState(null);
   const [profileCover, setProfileCover] = useState(null);
@@ -31,12 +30,11 @@ export default function ProfileCard(props) {
     setOpenEdit(true);
   };
   const picUploadHandler = (pic) => {
-    if(pic.type ==='image/jpeg')
-    {
+    if (pic.type === "image/jpeg") {
       uploadPic(pic, setProfilePic, setProfilePicName, userId.subId);
       setUploadedPic(true);
-    }else {
-      alert("Only files with the file extension jpeg are allowed")
+    } else {
+      alert("Only files with the file extension jpeg are allowed");
     }
   };
   const deleteSelectedPic = () => {
@@ -45,11 +43,11 @@ export default function ProfileCard(props) {
     setUploadedPic(null);
   };
   const coverUploadHandler = (cover) => {
-    if(cover.type ==='image/jpeg'){
+    if (cover.type === "image/jpeg") {
       uploadPic(cover, setProfileCover, setProfileCoverName, userId.subId);
       setUploadedCover(true);
-    }else {
-      alert("Only files with the file extension jpeg are allowed")
+    } else {
+      alert("Only files with the file extension jpeg are allowed");
     }
   };
   const deleteSelectedCover = () => {
@@ -57,35 +55,24 @@ export default function ProfileCard(props) {
     setProfileCover(null);
     setUploadedCover(null);
   };
-  const addInterest = (i,e) => {
-    // console.log(i);
-    e.preventDefault()
+  const addInterest = (i, e) => {
+    e.preventDefault();
     interestsArr.push(i);
-    // console.log([...userId.interests, ...interestsArr]);
     updateObj = {
       ...updateObj,
       interests: [...userId.interests, ...interestsArr],
     };
     setInterest("");
-    // console.log(updateObj);
     setUpdateObject(updateObj);
   };
   const deleteInterest = (arr, n) => {
-    // displayInterestsArr.pop()
     console.log(n);
-    // console.log(i)
-    // setInterestArr(
-    // interestsArr.filter((x) => i !== x)
     arr.splice(n, 1);
-    // )
     updateObj = {
       ...updateObj,
       interests: [...userId.interests, ...interestsArr],
     };
-    // let x = {interests: arr };
     setUpdateObject(updateObj);
-    console.log(updateObj);
-    // updateUser(userId.id, updateObj);
   };
   const discardChanges = () => {
     profilePic && deleteSelectedPic();
@@ -94,7 +81,7 @@ export default function ProfileCard(props) {
     setUploadedCover(null);
     setUploadedPic(null);
     setUpdateObject({});
-    window.location.reload(!(profilePic&&profileCover))
+    window.location.reload(!(profilePic && profileCover));
   };
   const updateHandler = () => {
     while (typeof profilePic === "string") {
@@ -125,30 +112,26 @@ export default function ProfileCard(props) {
     <div>
       <Container>
         <Card>
-          <Card.Img variant="top" src={userId && userId.cover} />
+          <Card.Img variant="top" src={userId.cover} />
           <Card.Body>
             <Card.Title>
               <Stack direction="horizontal" gap={3}>
                 <div>
-                  <Image
-                    roundedCircle
-                    width="120 rem"
-                    src={userId && userId.pic}
-                  />
+                  <Image roundedCircle width="120 rem" src={userId.pic} />
                 </div>
                 <div>
-                  <p>
-                    {`${userId && userId.firstName} ${
-                      userId && userId.lastName
-                    }`}
-                  </p>
-                  <p>{userId && userId.gender}</p>
+                  <p>{`${userId.firstName} ${userId.lastName}`}</p>
+                  <p>{userId.gender}</p>
                 </div>
               </Stack>
             </Card.Title>
-            <Card.Text>{userId && userId.bio}</Card.Text>
-            <Card.Text>{userId && userId.birthday}</Card.Text>
-            <Card.Text onClick={()=>props.setFriendsModal({show:true, friends: userId.friends})}>{`Friends (${userId && userId.friends.length})`}</Card.Text>
+            <Card.Text>{userId.bio}</Card.Text>
+            <Card.Text>{userId.birthday}</Card.Text>
+            <Card.Text
+              onClick={() =>
+                props.setFriendsModal({ show: true, friends: userId.friends })
+              }
+            >{`Friends (${userId.friends.length})`}</Card.Text>
             <Button onClick={() => editHandel()}>Edit profile</Button>
           </Card.Body>
         </Card>
@@ -269,26 +252,32 @@ export default function ProfileCard(props) {
                     value={interest}
                     onChange={(event) => setInterest(event.target.value)}
                   />
-                  <Button disabled={interest===""} type='submit' onClick={(e) => addInterest(interest,e)}>Add</Button>
+                  <Button
+                    disabled={interest === ""}
+                    type="submit"
+                    onClick={(e) => addInterest(interest, e)}
+                  >
+                    Add
+                  </Button>
                 </form>
-                  <Stack direction="horizontal">
-                    {userId.interests.map((i, n) => (
-                      <div key={n} className="bg-light border">
-                        <CloseButton
-                          onClick={() => deleteInterest(userId.interests, n)}
-                        />
-                        <p>{i}</p>
-                      </div>
-                    ))}
-                    {interestsArr.map((i, n) => (
-                      <div key={n} className="bg-light border">
-                        <CloseButton
-                          onClick={() => deleteInterest(interestsArr, n)}
-                        />
-                        <p>{i}</p>
-                      </div>
-                    ))}
-                  </Stack>
+                <Stack direction="horizontal">
+                  {userId.interests.map((i, n) => (
+                    <div key={n} className="bg-light border">
+                      <CloseButton
+                        onClick={() => deleteInterest(userId.interests, n)}
+                      />
+                      <p>{i}</p>
+                    </div>
+                  ))}
+                  {interestsArr.map((i, n) => (
+                    <div key={n} className="bg-light border">
+                      <CloseButton
+                        onClick={() => deleteInterest(interestsArr, n)}
+                      />
+                      <p>{i}</p>
+                    </div>
+                  ))}
+                </Stack>
               </Form.Group>
               <Button
                 disabled={

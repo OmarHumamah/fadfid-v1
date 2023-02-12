@@ -1,24 +1,17 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { Container } from "react-bootstrap";
 import { SettingContext } from "../../context/Context";
 import Post from "../posts/Post";
 import PostForm from "./PostForm";
 
-export default function Wall() {
-  const { posts, getPosts, getAllUsers, allUsers, user } = useContext(SettingContext);
+export default function Wall(props) {
+  const { allUsers, user } = useContext(SettingContext);
 
-  useEffect(() => {
-    getAllUsers();
-    getPosts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const userId = allUsers.find((u) => u.subId === user.sub);
-
+  const posts = props.posts;
   return (
     <div>
-      <Container>
-        <PostForm />
-      </Container>
+      <Container>{userId && <PostForm userId={userId} />}</Container>
       <Container>
         {posts
           .sort((a, b) => b.postTime - a.postTime)

@@ -13,7 +13,6 @@ import {
   Dropdown,
   Modal,
 } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import { SettingContext } from "../../context/Context";
 import ImgModal from "./ImgModal";
 
@@ -29,7 +28,9 @@ export default function Post(props) {
     deletePost,
     deletePic,
     updatePrivacy,
-    formatDate
+    formatDate,
+    maleAvatar,
+    femaleAvatar,
   } = useContext(SettingContext);
 
   const userId = allUsers.find((u) => u.subId === user.sub);
@@ -81,34 +82,37 @@ export default function Post(props) {
     setPrivacy(props.content.privacy);
     setShowPrivacyF(false);
   };
-  
 
   return (
     <div>
       <Container fluid>
         <Card id={props.content.id}>
-          <Card.Header  style={{ display: "flex" }}>
+          <Card.Header style={{ display: "flex" }}>
             <a
               style={{ display: "flex" }}
-              href={`/${
-                userId && userId.userName === postOwner.userName
-                  ? "profile"
-                  : postOwner.userName
+              href={`${
+                props.content.anonymous
+                  ? "#"
+                  : userId && userId.userName === postOwner.userName
+                  ? "/profile"
+                  : "/" + postOwner.userName
               }`}
             >
               <Image
                 roundedCircle
                 width="40 rem"
                 src={
-                  userId && userId.userName === postOwner.userName
-                    ? userId.pic
-                    : postOwner.pic
+                  props.content.anonymous
+                    ? postOwner.gender === "Male"
+                      ? maleAvatar
+                      : femaleAvatar
+                    : userId && postOwner.pic
                 }
               />
               <p>To {props.content.privacy}:</p>
-              {userId && userId.userName === postOwner.userName
-                ? `${userId.firstName} ${userId.lastName}`
-                : `${postOwner.firstName} ${postOwner.lastName}`}
+              {props.content.anonymous
+                ? "Anonymous post"
+                : userId && `${postOwner.firstName} ${postOwner.lastName}`}
               :
             </a>
             {formatDate(props.content.postTime)}
@@ -179,8 +183,14 @@ export default function Post(props) {
                   <Tooltip>
                     {props.content.likes.map((like, n) => (
                       <p key={n}>
-                        {allUsers.find((u) => u.subId === like.id).firstName}{" "}
-                        {allUsers.find((u) => u.subId === like.id).lastName}
+                        {like.anonymous
+                          ? "Anonymous"
+                          : `${
+                              allUsers.find((u) => u.subId === like.id)
+                                .firstName
+                            } ${
+                              allUsers.find((u) => u.subId === like.id).lastName
+                            }`}
                       </p>
                     ))}
                   </Tooltip>
@@ -233,14 +243,20 @@ export default function Post(props) {
                     roundedCircle
                     width="35 rem"
                     src={
-                      userId && allUsers.find((u) => u.subId === user.sub).pic
+                      userId && userId.anonymous
+                        ? userId.gender === "Male"
+                          ? maleAvatar
+                          : femaleAvatar
+                        : userId.pic
                     }
                   />
                   <form style={{ display: "flex" }}>
                     <Form.Control
                       ref={cRef}
                       className="me-auto"
-                      placeholder="Write a comment..."
+                      placeholder={`Write a comment ${
+                        userId && userId.anonymous ? "anonymously" : ""
+                      }...`}
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                     />
@@ -268,7 +284,7 @@ export default function Post(props) {
                     <div style={{ display: "flex" }} className="ms-2 me-auto">
                       <div>
                         <a
-                          href={`/${
+                          href={`/${comment.anonymous?"#":
                             userId && userId.subId === comment.id
                               ? "profile"
                               : allUsers.find((u) => u.subId === comment.id)
@@ -280,19 +296,28 @@ export default function Post(props) {
                               roundedCircle
                               width="35 rem"
                               src={
-                                allUsers.find(
-                                  (user) => user.subId === comment.id
-                                ).pic
+                                comment.anonymous
+                                  ? allUsers.find(
+                                      (user) => user.subId === comment.id
+                                    ).gender === "Male"
+                                    ? maleAvatar
+                                    : femaleAvatar
+                                  : allUsers.find(
+                                      (user) => user.subId === comment.id
+                                    ).pic
                               }
                             />
-                            {
-                              allUsers.find((user) => user.subId === comment.id)
-                                .firstName
-                            }{" "}
-                            {
-                              allUsers.find((user) => user.subId === comment.id)
-                                .lastName
-                            }
+                            {comment.anonymous
+                              ? "Anonymous comment"
+                              : `${
+                                  allUsers.find(
+                                    (user) => user.subId === comment.id
+                                  ).firstName
+                                } ${
+                                  allUsers.find(
+                                    (user) => user.subId === comment.id
+                                  ).lastName
+                                }`}
                             :
                           </p>
                         </a>
@@ -363,11 +388,11 @@ export default function Post(props) {
             </ListGroup>
             {props.content.comments.length > 3 &&
               commentSlicer < props.content.comments.length && (
-                <a onClick={() => setCommentSlicer(commentSlicer + 3)}>
+                <p onClick={() => setCommentSlicer(commentSlicer + 3)}>
                   Show more {props.content.comments.length - commentSlicer}{" "}
                   comment
                   {props.content.comments.length - commentSlicer > 1 && "s"}
-                </a>
+                </p>
               )}
           </Card.Body>
         </Card>
