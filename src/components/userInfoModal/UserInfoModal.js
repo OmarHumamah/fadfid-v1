@@ -1,6 +1,29 @@
+import {
+  Card,
+  CardActions,
+  Modal,
+  Stack,
+  TextField,
+  Typography,
+  Button,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+} from "@mui/material";
 import React, { useContext, useState, useEffect } from "react";
-import { Button, Form, Modal } from "react-bootstrap";
 import { SettingContext } from "../../context/Context";
+
+const postModalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 350,
+  bgcolor: "background.paper",
+  // border: "2px solid #000",
+  boxShadow: 24,
+  p: 4,
+};
 
 export default function UserInfoModal() {
   const { user, allUsers, createUser, getAllUsers } =
@@ -8,12 +31,12 @@ export default function UserInfoModal() {
 
   useEffect(() => {
     getAllUsers();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const userId = allUsers.find((u) => u.subId === user.sub);
 
-  const [firstName, setFirstName] = useState(null);
-  const [lastName, setLastName] = useState(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [userName, setUserName] = useState("");
   const [gender, setGender] = useState("Male");
 
@@ -32,7 +55,7 @@ export default function UserInfoModal() {
 
   const setUserNameHandler = (e) => {
     let userN = e.target.value.replace(/\s/g, "");
-    setUserName(userN);
+    userN.length <= 70 && setUserName(userN);
   };
   const femaleAvatar =
     "https://firebasestorage.googleapis.com/v0/b/omar-f.appspot.com/o/users_pics_and_covers%2Fanonymous%2FfemaleAvatar.png?alt=media&token=91a3c821-140c-49b0-9570-08ec29af763f";
@@ -41,8 +64,8 @@ export default function UserInfoModal() {
   const newUser = {
     subId: user.sub,
     userName,
-    firstName: firstName ? firstName : user.given_name,
-    lastName: lastName ? lastName : user.family_name,
+    firstName: firstName.length ? firstName : user.given_name,
+    lastName: lastName.length ? lastName : user.family_name,
     language: user.locale ? user.locale : "en-GB",
     gender,
     interests: [],
@@ -58,90 +81,78 @@ export default function UserInfoModal() {
 
   return (
     <div>
-      <Modal show={!userId}>
-        <Modal.Header>
-          <Modal.Title>
+      <Modal open={!userId}>
+        <Card sx={postModalStyle}>
+          <Typography>
             Welcome {user.given_name ? user.given_name : user.nickname}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Group className="mb-3" controlId="formBasicEmail">
-            <Form.Label>First name</Form.Label>
-            <Form.Control
+          </Typography>
+          <Stack direction="row" spacing={1} py={3}>
+            <TextField
+              label="First name"
               onChange={(e) => setFirstName(e.target.value)}
-              placeholder={user.given_name}
+              defaultValue={user.given_name}
+              helperText={!firstName && "Pick Name!"}
             />
-            {!firstName && (
-              <Form.Text className="text-muted">Pick Name!</Form.Text>
-            )}
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="formBasicEmail">
-            <Form.Label>LastName</Form.Label>
-            <Form.Control
+            <TextField
+              label="Last Name"
               onChange={(e) => setLastName(e.target.value)}
-              placeholder={user.family_name}
+              defaultValue={user.family_name}
+              helperText={!lastName && "Pick a LastName!"}
             />
-            {!lastName && (
-              <Form.Text className="text-muted">Pick a LastName!</Form.Text>
-            )}
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="formBasicEmail">
-            <Form.Label>Username</Form.Label>
-            <Form.Control
-              value={userName}
-              onClick={() => setUserName(generateUsername())}
-              onChange={(e) => setUserNameHandler(e)}
-              placeholder={generateUsername()}
-            />
-            {allUsers.find((u) => u.userName === userName) && (
-              <Form.Text className="text-muted">
-                {userName} is used ,try {generateUsername()}!
-              </Form.Text>
-            )}
-            {userName && userName.length <= 5 && (
-              <Form.Text className="text-muted">
-                Username should be 6 characters or more!
-              </Form.Text>
-            )}
-            {!userName && (
-              <Form.Text className="text-muted">Pick a UserName!</Form.Text>
-            )}
-          </Form.Group>
-          <Form.Group>
-            <Form.Label htmlFor="gender">Gender</Form.Label>
-            <br />
-            <Form.Check
-              inline
-              defaultChecked
-              value="Male"
-              label="Male"
-              name="gender"
-              type="radio"
-              onClick={(e) => setGender(e.target.value)}
-            />
-            <Form.Check
-              inline
-              label="Female"
-              value="Female"
-              name="gender"
-              type="radio"
-              onClick={(e) => setGender(e.target.value)}
-            />
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            disabled={
-              (userName.length >= 6
-                ? allUsers.find((u) => u.userName === userName)
-                : true) || !(newUser.firstName && newUser.lastName)
-            }
-            variant="primary"
-            onClick={() => createUser(newUser)}
+          </Stack>
+          <TextField
+            sx={{ width: "100%" }}
+            label="Username"
+            value={userName ? userName : generateUsername()}
+            onClick={() => setUserName(generateUsername())}
+            onChange={(e) => setUserNameHandler(e)}
+            helperText={!userName && "Pick a UserName!"}
+          />
+          {allUsers.find((u) => u.userName === userName) && (
+            <Typography fontSize={12} color="red">
+              {userName} is used ,try again!
+            </Typography>
+          )}
+          {userName && userName.length <= 5 && (
+            <Typography fontSize={12} color="red">
+              Username should be 6 characters or more!
+            </Typography>
+          )}
+
+          <Typography>Gender</Typography>
+          <RadioGroup
+            row
+            name="gender"
+            onChange={(e) => setGender(e.target.value)}
           >
-            Save
-          </Button>
-        </Modal.Footer>
+            <FormControlLabel
+              checked={gender === "Male"}
+              value="Male"
+              control={<Radio />}
+              label="Male"
+            />
+            <FormControlLabel
+              value="Female"
+              control={<Radio />}
+              label="Female"
+            />
+          </RadioGroup>
+
+          <CardActions>
+            <Button
+              disabled={
+                (userName.length >= 6
+                  ? allUsers.find((u) => u.userName === userName)
+                  : true) || !(newUser.firstName && newUser.lastName)
+              }
+              variant="contained"
+              color="success"
+              onClick={() => createUser(newUser)}
+            >
+              Save
+            </Button>
+          </CardActions>
+        </Card>
       </Modal>
     </div>
   );

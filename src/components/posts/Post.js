@@ -1,21 +1,58 @@
-import React, { useRef, useState, useContext } from "react";
 import {
-  Button,
+  Avatar,
   Card,
-  Container,
-  Stack,
-  ListGroup,
+  CardActions,
+  CardContent,
+  CardHeader,
+  CardMedia,
+  Collapse,
+  IconButton,
+  styled,
+  Typography,
   Badge,
-  Image,
-  Form,
-  OverlayTrigger,
+  Menu,
+  MenuItem,
   Tooltip,
-  Dropdown,
+  Divider,
+  Stack,
+  Box,
+  TextField,
+  Button,
+  List,
+  Paper,
+  ListItem,
   Modal,
-} from "react-bootstrap";
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import FavoriteBorder from "@mui/icons-material/FavoriteBorder";
+import Favorite from "@mui/icons-material/Favorite";
+import CommentRoundedIcon from "@mui/icons-material/CommentRounded";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import React, { useRef, useState, useContext } from "react";
 import { SettingContext } from "../../context/Context";
-import ImgModal from "./ImgModal";
+import ActionAlert from "../alert/Alert";
+// import ImgModal from "./ImgModal";
+const StyledLink = styled("a")(({ theme }) => ({
+  ...theme.link,
+}));
 
+const postModalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 300,
+  bgcolor: "background.paper",
+  // border: "2px solid #000",
+  boxShadow: 24,
+  p: 4,
+};
 export default function Post(props) {
   const {
     updateLike,
@@ -38,17 +75,30 @@ export default function Post(props) {
 
   const img = props.content.picture;
   const cRef = useRef(null);
-  const [imgModal, setImgModal] = useState(false);
+  // const [imgModal, setImgModal] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [commentSlicer, setCommentSlicer] = useState(3);
   const [commentEditId, setCommentEditId] = useState(null);
   const [commentEdit, setCommentEdit] = useState("");
   const [showPrivacyF, setShowPrivacyF] = useState(false);
   const [privacy, setPrivacy] = useState(props.content.privacy);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const openPostMenu = Boolean(anchorEl);
+  const [openComments, setOpenComments] = useState(false);
+  const [openAlert, setOpenAlert] = useState(false);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   const addCommentHandler = (e) => {
     e.preventDefault();
-    addComment(props.content, user, newComment);
+    if (newComment.length) {
+      addComment(props.content, user, newComment);
+    }
     setNewComment("");
+    e.target.value = "";
   };
 
   const editHandler = (id, text) => {
@@ -70,10 +120,15 @@ export default function Post(props) {
         props.content.subId,
         "post's_images"
       );
+    handleCloseAlert();
     // console.log("post deleted")
     // console.log("file",props.content.pictureName,"deleted")
   };
 
+  const handleCloseAlert = () => {
+    handleClose();
+    setOpenAlert(false);
+  };
   const privacySubmit = () => {
     updatePrivacy(props.content.id, privacy);
     setShowPrivacyF(false);
@@ -84,23 +139,19 @@ export default function Post(props) {
   };
 
   return (
-    <div>
-      <Container fluid>
-        <Card id={props.content.id}>
-          <Card.Header style={{ display: "flex" }}>
-            <a
-              style={{ display: "flex" }}
-              href={`${
-                props.content.anonymous
-                  ? "#"
-                  : userId && userId.userName === postOwner.userName
-                  ? "/profile"
-                  : "/" + postOwner.userName
-              }`}
+    <>
+      <Card id={props.content.id} sx={{ Width: 100 }}>
+        <CardHeader
+          avatar={
+            <Badge
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              color="success"
+              badgeContent={props.content.privacy}
             >
-              <Image
-                roundedCircle
-                width="40 rem"
+              <Avatar
                 src={
                   props.content.anonymous
                     ? postOwner.gender === "Male"
@@ -109,295 +160,402 @@ export default function Post(props) {
                     : userId && postOwner.pic
                 }
               />
-              <p>To {props.content.privacy}:</p>
+            </Badge>
+          }
+          action={
+            user.sub === props.content.subId && (
+              <>
+                <IconButton
+                  onClick={(e) => handleClick(e)}
+                  aria-label="settings"
+                >
+                  <MoreVertIcon />
+                </IconButton>
+                <Menu
+                  id="demo-positioned-menu"
+                  aria-labelledby="demo-positioned-button"
+                  anchorEl={anchorEl}
+                  open={openPostMenu}
+                  onClose={() => handleClose()}
+                  anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "left",
+                  }}
+                  transformOrigin={{
+                    vertical: "top",
+                    horizontal: "left",
+                  }}
+                >
+                  <MenuItem onClick={() => setOpenAlert(true)}>
+                    Delete post
+                  </MenuItem>
+                  <ActionAlert
+                    content={"Delete this post permanently.\n Are you sure?"}
+                    openAlert={openAlert}
+                    closeAlert={handleCloseAlert}
+                    action={deletePostHandler}
+                  />
+                  <MenuItem
+                    onClick={() => {
+                      setShowPrivacyF(true);
+                      handleClose();
+                    }}
+                  >
+                    Change privacy
+                  </MenuItem>
+                </Menu>
+              </>
+            )
+          }
+          title={
+            <StyledLink
+              href={`${
+                props.content.anonymous
+                  ? `#${props.content.id}`
+                  : userId.userName === postOwner.userName
+                  ? "/profile"
+                  : "/" + postOwner.userName
+              }`}
+            >
               {props.content.anonymous
                 ? "Anonymous post"
                 : userId && `${postOwner.firstName} ${postOwner.lastName}`}
-              :
-            </a>
-            {formatDate(props.content.postTime)}
-            {user.sub === props.content.subId && (
-              <Dropdown>
-                <Dropdown.Toggle
-                  variant="outline-secondary"
-                  id="dropdown-basic"
-                >
-                  . . .
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => deletePostHandler()}>
-                    Delete post
-                  </Dropdown.Item>
-                  <Dropdown.Item onClick={() => setShowPrivacyF(true)}>
-                    Change privacy
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            )}
-            <Modal show={showPrivacyF} onHide={() => setShowPrivacyF(false)}>
-              <Card>
-                <Card.Header>Change Privacy</Card.Header>
-                <Card.Body>
-                  <Form.Check
-                    label="All"
-                    value="All"
-                    name="privacy"
-                    type="radio"
-                    onClick={(e) => setPrivacy(e.target.value)}
-                  />
-                  <Form.Check
-                    label="Friends"
-                    value="Friends"
-                    name="privacy"
-                    type="radio"
-                    onClick={(e) => setPrivacy(e.target.value)}
-                  />
-                  <Form.Check
-                    label="Only me"
-                    value="Private"
-                    name="privacy"
-                    type="radio"
-                    onClick={(e) => setPrivacy(e.target.value)}
-                  />
-                </Card.Body>
-                <Card.Footer>
-                  <Button onClick={() => privacySubmit()}>Save</Button>
-                  <Button variant="secondary" onClick={() => privacyCancel()}>
-                    Cancel
-                  </Button>
-                </Card.Footer>
-              </Card>
-            </Modal>
-          </Card.Header>
-          <Card.Title className="d-flex align-items-start"></Card.Title>
-          <Card.Body>
-            <Card.Text className="d-flex justify-content-between align-items-start">
-              {props.content.text}
-            </Card.Text>
-            {img && <Card.Img onClick={() => setImgModal(true)} src={img} />}
-            <Stack direction="horizontal" gap={2}>
-              <OverlayTrigger
-                placement="right"
-                delay={{ show: 250, hide: 400 }}
-                overlay={
-                  <Tooltip>
-                    {props.content.likes.map((like, n) => (
-                      <p key={n}>
-                        {like.anonymous
-                          ? "Anonymous"
-                          : `${
-                              allUsers.find((u) => u.subId === like.id)
-                                .firstName
-                            } ${
-                              allUsers.find((u) => u.subId === like.id).lastName
-                            }`}
-                      </p>
-                    ))}
-                  </Tooltip>
-                }
+            </StyledLink>
+          }
+          subheader={formatDate(props.content.postTime)}
+        />
+        <CardMedia component="img" height="auto" image={img} />
+        <CardContent>
+          <Typography variant="body2">{props.content.text}</Typography>
+        </CardContent>
+        <CardActions disableSpacing>
+          {!props.content.likes.some((liker) => liker.id === user.sub) ? (
+            <IconButton
+              onClick={() => updateLike(props.content, user)}
+              aria-label="add to favorites"
+            >
+              <FavoriteBorder />
+            </IconButton>
+          ) : (
+            <IconButton
+              color="error"
+              onClick={() => dislike(props.content, user)}
+              aria-label="add to favorites"
+            >
+              <Favorite />
+            </IconButton>
+          )}
+          <Tooltip
+            title={props.content.likes.map((like, n) => (
+              <StyledLink
+                key={n}
+                href={`${
+                  like.anonymous
+                    ? `#${props.content.id}`
+                    : userId.userName ===
+                      allUsers.find((u) => u.subId === like.id).userName
+                    ? "/profile"
+                    : "/" + allUsers.find((u) => u.subId === like.id).userName
+                }`}
               >
-                <div className="bg-light border">
-                  likes <Badge>{props.content.likes.length}</Badge>
-                </div>
-              </OverlayTrigger>
-
-              <div className="bg-light border ms-auto">
-                <Badge>{props.content.comments.length}</Badge> comments
-              </div>
-            </Stack>
-            <hr />
-            <Stack direction="horizontal" gap={2}>
-              <div>
-                {!props.content.likes.some((liker) => liker.id === user.sub) ? (
-                  <Button
-                    onClick={() => updateLike(props.content, user)}
-                    variant="outline-secondary"
-                  >
-                    Like
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => dislike(props.content, user)}
-                    variant="secondary"
-                  >
-                    Like
-                  </Button>
-                )}
-              </div>
-              <div className="vr" />
-              <div>
-                <Button
-                  variant="outline-secondary"
-                  onClick={() => cRef.current.focus()}
+                <p>
+                  {like.anonymous
+                    ? "Anonymous"
+                    : `${allUsers.find((u) => u.subId === like.id).firstName} ${
+                        allUsers.find((u) => u.subId === like.id).lastName
+                      }`}
+                </p>
+              </StyledLink>
+            ))}
+          >
+            <Typography color="text.secondary">
+              {props.content.likes.length}
+            </Typography>
+          </Tooltip>
+          <IconButton
+            disabled={!props.content.comments.length}
+            onClick={() => setOpenComments(!openComments)}
+          >
+            <CommentRoundedIcon />
+          </IconButton>
+          <Tooltip
+            title={props.content.comments.map((c, n) => (
+              <StyledLink
+                key={n}
+                href={`${
+                  c.anonymous
+                    ? `#${props.content.id}`
+                    : userId.userName ===
+                      allUsers.find((u) => u.subId === c.id).userName
+                    ? "/profile"
+                    : "/" + allUsers.find((u) => u.subId === c.id).userName
+                }`}
+              >
+                <p>
+                  {c.anonymous
+                    ? "Anonymous"
+                    : `${allUsers.find((u) => u.subId === c.id).firstName} ${
+                        allUsers.find((u) => u.subId === c.id).lastName
+                      }`}
+                </p>
+              </StyledLink>
+            ))}
+          >
+            <Typography color="text.secondary">
+              {props.content.comments.length}
+            </Typography>
+          </Tooltip>
+        </CardActions>
+        <Divider />
+        <CardContent>
+          <Stack p={1} direction="row" alignItems="center">
+            <Box flex={1}>
+              <Avatar
+                src={
+                  userId && userId.anonymous
+                    ? userId.gender === "Male"
+                      ? maleAvatar
+                      : femaleAvatar
+                    : userId.pic
+                }
+              />
+            </Box>
+            <Box flex={9}>
+              <form>
+                <Stack
+                  p={1}
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
                 >
-                  comment
-                </Button>
-              </div>
-            </Stack>
-          </Card.Body>
-          <Card.Body>
-            <Card>
-              <Card.Body>
-                <Stack direction="horizontal" gap={3}>
-                  <Image
-                    roundedCircle
-                    width="35 rem"
-                    src={
-                      userId && userId.anonymous
-                        ? userId.gender === "Male"
-                          ? maleAvatar
-                          : femaleAvatar
-                        : userId.pic
-                    }
+                  <TextField
+                    id="outlined-basic"
+                    value={newComment}
+                    label={`Write a comment ${
+                      userId && userId.anonymous ? "anonymously" : ""
+                    }...`}
+                    variant="outlined"
+                    sx={{ width: "80%" }}
+                    onChange={(e) => setNewComment(e.target.value)}
                   />
-                  <form style={{ display: "flex" }}>
-                    <Form.Control
-                      ref={cRef}
-                      className="me-auto"
-                      placeholder={`Write a comment ${
-                        userId && userId.anonymous ? "anonymously" : ""
-                      }...`}
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                    />
-                    <Button
-                      disabled={newComment === ""}
-                      onClick={(e) => addCommentHandler(e)}
-                      variant="secondary"
-                      type="submit"
-                    >
-                      Enter
-                    </Button>
-                  </form>
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    endIcon={<CommentRoundedIcon />}
+                    onClick={(e) => addCommentHandler(e)}
+                  >
+                    enter
+                  </Button>
                 </Stack>
-              </Card.Body>
-            </Card>
-            <ListGroup as="ol">
+              </form>
+            </Box>
+          </Stack>
+          <Divider />
+
+          <Collapse in={openComments}>
+            <List>
               {props.content.comments
                 .slice(0, commentSlicer)
                 .map((comment, n) => (
-                  <ListGroup.Item
-                    key={n}
-                    as="li"
-                    className="d-flex justify-content-between align-items-start"
-                  >
-                    <div style={{ display: "flex" }} className="ms-2 me-auto">
-                      <div>
-                        <a
-                          href={`/${comment.anonymous?"#":
-                            userId && userId.subId === comment.id
-                              ? "profile"
-                              : allUsers.find((u) => u.subId === comment.id)
-                                  .userName
-                          }`}
-                        >
-                          <p className="fw-bold">
-                            <Image
-                              roundedCircle
-                              width="35 rem"
-                              src={
+                  <ListItem key={n}>
+                    <Stack p={1} direction="row" justifyContent="space-between">
+                      <Box flex={1}>
+                        <Avatar
+                          src={
+                            comment.anonymous
+                              ? allUsers.find(
+                                  (user) => user.subId === comment.id
+                                ).gender === "Male"
+                                ? maleAvatar
+                                : femaleAvatar
+                              : allUsers.find(
+                                  (user) => user.subId === comment.id
+                                ).pic
+                          }
+                        />
+                      </Box>
+                      <Box flex={10}>
+                        <Paper sx={{ padding: "5px" }} elevation={5}>
+                          <Typography sx={{ fontSize: "14px" }}>
+                            <StyledLink
+                              href={`/${
                                 comment.anonymous
-                                  ? allUsers.find(
+                                  ? "#"
+                                  : userId && userId.subId === comment.id
+                                  ? "profile"
+                                  : allUsers.find((u) => u.subId === comment.id)
+                                      .userName
+                              }`}
+                            >
+                              {comment.anonymous
+                                ? "Anonymous comment"
+                                : `${
+                                    allUsers.find(
                                       (user) => user.subId === comment.id
-                                    ).gender === "Male"
-                                    ? maleAvatar
-                                    : femaleAvatar
-                                  : allUsers.find(
+                                    ).firstName
+                                  } ${
+                                    allUsers.find(
                                       (user) => user.subId === comment.id
-                                    ).pic
-                              }
-                            />
-                            {comment.anonymous
-                              ? "Anonymous comment"
-                              : `${
-                                  allUsers.find(
-                                    (user) => user.subId === comment.id
-                                  ).firstName
-                                } ${
-                                  allUsers.find(
-                                    (user) => user.subId === comment.id
-                                  ).lastName
-                                }`}
-                            :
-                          </p>
-                        </a>
-                        <p>{formatDate(comment.time)}</p>
+                                    ).lastName
+                                  }`}
+                            </StyledLink>
+                          </Typography>
+                          <Typography paragraph color="text.secondary">
+                            {!(commentEditId === comment.time) && comment.text}
+                            {commentEditId === comment.time && (
+                              <form>
+                                <TextField
+                                  ref={cRef}
+                                  multiline
+                                  variant="standard"
+                                  label={comment.text}
+                                  value={commentEdit}
+                                  onChange={(e) =>
+                                    setCommentEdit(e.target.value)
+                                  }
+                                />
+                              </form>
+                            )}
+                          </Typography>
+                        </Paper>
+                        <Typography
+                          sx={{ fontSize: 14 }}
+                          color="text.secondary"
+                          gutterBottom
+                        >
+                          {formatDate(comment.time)}
+                        </Typography>
                         {comment.editTime && (
-                          <p>Edited {formatDate(comment.editTime)}</p>
+                          <Typography
+                            sx={{ fontSize: 14 }}
+                            color="text.secondary"
+                            gutterBottom
+                          >
+                            Edited {formatDate(comment.editTime)}
+                          </Typography>
                         )}
-                      </div>
-
-                      {!(commentEditId === comment.time) && (
-                        <p style={{ padding: 30 }}>{comment.text}</p>
-                      )}
-                      {commentEditId === comment.time && (
-                        <form>
-                          <Form.Control
-                            ref={cRef}
-                            className="me-auto"
-                            placeholder={comment.text}
-                            value={commentEdit}
-                            onChange={(e) => setCommentEdit(e.target.value)}
-                          />
-                          <div>
-                            <Button
-                              disabled={
-                                commentEdit === "" ||
-                                commentEdit === comment.text
-                              }
+                      </Box>
+                      <Box flex={1}>
+                        {!(commentEditId === comment.time) && (
+                          <>
+                            {(comment.id === user.sub ||
+                              props.content.subId === user.sub) && (
+                              <IconButton
+                                size="small"
+                                onClick={(e) =>
+                                  deleteComment(props.content, comment)
+                                }
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            )}
+                            {comment.id === user.sub && (
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  editHandler(comment.time, comment.text)
+                                }
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            )}
+                          </>
+                        )}
+                        {commentEditId === comment.time && (
+                          <>
+                            <IconButton
+                              size="small"
                               onClick={(e) => saveEditHandler(n, e)}
                               type="submit"
                             >
-                              Save
-                            </Button>
-                            <Button onClick={() => setCommentEditId(null)}>
-                              Cancel
-                            </Button>
-                          </div>
-                        </form>
-                      )}
-                      {!(commentEditId === comment.time) && (
-                        <div>
-                          {comment.id === user.sub && (
-                            <Button
-                              variant="outline-secondary"
-                              onClick={() =>
-                                editHandler(comment.time, comment.text)
-                              }
+                              <CheckRoundedIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => setCommentEditId(null)}
+                              type="submit"
                             >
-                              Edit
-                            </Button>
-                          )}
-
-                          {(comment.id === user.sub ||
-                            props.content.subId === user.sub) && (
-                            <Button
-                              onClick={() =>
-                                deleteComment(props.content, comment)
-                              }
-                              variant="outline-secondary"
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </ListGroup.Item>
+                              <CloseRoundedIcon />
+                            </IconButton>
+                          </>
+                        )}
+                      </Box>
+                    </Stack>
+                  </ListItem>
                 ))}
-            </ListGroup>
+            </List>
             {props.content.comments.length > 3 &&
               commentSlicer < props.content.comments.length && (
-                <p onClick={() => setCommentSlicer(commentSlicer + 3)}>
-                  Show more {props.content.comments.length - commentSlicer}{" "}
-                  comment
+                <Button
+                  size="small"
+                  onClick={() => setCommentSlicer(commentSlicer + 3)}
+                >
+                  More ({props.content.comments.length - commentSlicer}) comment
                   {props.content.comments.length - commentSlicer > 1 && "s"}
-                </p>
+                </Button>
               )}
-          </Card.Body>
+            <StyledLink href={`${window.location.pathname?window.location.pathname:"/"}#${props.content.id}`}>
+              <Button
+                onClick={() => {
+                  setOpenComments(!openComments);
+                  setCommentSlicer(3);
+                }}
+              >
+                Hide Comments
+              </Button>
+            </StyledLink>
+          </Collapse>
+        </CardContent>
+      </Card>
+
+      <Modal open={showPrivacyF} onClose={() => setShowPrivacyF(false)}>
+        <Card sx={postModalStyle}>
+          <CardHeader title="Change Privacy" />
+          <Box paddingX={3}>
+            <RadioGroup
+              name="language"
+              value={privacy}
+              onChange={(e) => setPrivacy(e.target.value)}
+            >
+              <FormControlLabel
+                value="All"
+                checked={privacy === "All"}
+                control={<Radio />}
+                label="All"
+              />
+              <FormControlLabel
+                label="Friends"
+                value="Friends"
+                checked={privacy === "Friends"}
+                control={<Radio />}
+              />
+              <FormControlLabel
+                label="Only me"
+                value="Private"
+                checked={privacy === "Private"}
+                control={<Radio />}
+              />
+            </RadioGroup>
+          </Box>
+          <CardActions>
+            <Button
+              variant="secondary"
+              endIcon={<CheckRoundedIcon />}
+              onClick={() => privacySubmit()}
+            >
+              Save
+            </Button>
+            <Button
+              variant="secondary"
+              startIcon={<CloseRoundedIcon />}
+              onClick={() => privacyCancel()}
+            >
+              Cancel
+            </Button>
+          </CardActions>
         </Card>
-      </Container>
-      <ImgModal img={img} imgModal={imgModal} setImgModal={setImgModal} />
-    </div>
+      </Modal>
+      {/* <ImgModal img={img} imgModal={imgModal} setImgModal={setImgModal} /> */}
+    </>
   );
 }

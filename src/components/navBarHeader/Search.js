@@ -1,14 +1,33 @@
-import React, { useState } from "react";
 import {
-  Form,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Avatar,
+  Divider,
+  InputBase,
+  Link,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  styled,
+  Typography,
   Card,
-  Container,
-  ButtonGroup,
+  CardHeader,
+  CardMedia,
+  CardContent,
+  ToggleButtonGroup,
   ToggleButton,
-  ListGroup,
-  Image,
-} from "react-bootstrap";
-import CardHeader from "react-bootstrap/esm/CardHeader";
+} from "@mui/material";
+import React, { useState } from "react";
+import SearchIcon from "@mui/icons-material/Search";
+const StyledLink = styled(Link)(({ theme }) => ({
+  ...theme.link,
+}));
+const StyledDiv = styled("div")(({ theme }) => ({
+  height: "400px",
+  overflow: "scroll",
+}));
 
 export default function Search(props) {
   const [search, setSearch] = useState(false);
@@ -58,9 +77,10 @@ export default function Search(props) {
     const results = [];
 
     for (const post of posts) {
-      if (post.text.toLowerCase().includes(searchTerm)) {
-        results.push(post);
-      }
+      if (post.text)
+        if (post.text.toLowerCase().includes(searchTerm)) {
+          results.push(post);
+        }
     }
 
     for (const user of users) {
@@ -77,101 +97,120 @@ export default function Search(props) {
   };
 
   return (
-    <div>
-      <Form className="d-flex">
-        <Form.Control
-          type="search"
-          placeholder="Search"
-          className="me-2"
-          aria-label="Search"
+    <Accordion>
+      <AccordionSummary expandIcon={<SearchIcon />}>
+        <InputBase
+          placeholder="Search..."
           onChange={(e) => searchHandler(e.target.value)}
         />
-      </Form>
+      </AccordionSummary>
       {search && (
-        <Container>
-          <ButtonGroup>
-            {radios.map((radio, idx) => (
-              <ToggleButton
-                key={idx}
-                id={`radio-${idx}`}
-                type="radio"
-                variant={idx % 2 ? "outline-secondary" : "outline-secondary"}
-                name="radio"
-                value={radio.value}
-                checked={radioValue === radio.value}
-                onChange={(e) => setRadioValue(e.currentTarget.value)}
-              >
-                {radio.name}
+        <AccordionDetails>
+          <ToggleButtonGroup
+            fullWidth
+            value={radioValue}
+            onChange={(e) => setRadioValue(e.currentTarget.value)}
+          >
+            {radios.map((r, n) => (
+              <ToggleButton key={n} value={r.value}>
+                {r.name}
               </ToggleButton>
             ))}
-          </ButtonGroup>
+          </ToggleButtonGroup>
+
           {radioValue === "2" && (
-            <ListGroup>
+            <List>
               {searchResults
                 .filter((res) => res.cover)
                 .filter((u) => u.subId !== userId.subId)
                 .map((res, n) => (
-                  <ListGroup.Item key={n}>
-                    <a href={`/${res.userName}`}>
-                      <div style={{ display: "flex" }}>
-                        <Image src={res.pic} roundedCircle width={40} />
-                        <p>{`${res.firstName} ${res.lastName}`}</p>
-                      </div>
-                      <p>{res.userName}</p>
-                    </a>
-                  </ListGroup.Item>
+                  <>
+                    <StyledLink href={`/${res.userName}`}>
+                      <ListItem key={n} alignItems="flex-start">
+                        <ListItemAvatar>
+                          <Avatar src={res.pic} />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={`${res.firstName} ${res.lastName}`}
+                          secondary={
+                            <React.Fragment>{res.userName}</React.Fragment>
+                          }
+                        />
+                      </ListItem>
+                    </StyledLink>
+                    <Divider variant="inset" component="li" />
+                  </>
                 ))}
-            </ListGroup>
+            </List>
           )}
           {radioValue === "1" && (
-            <ListGroup>
-              {searchResults
-                .filter((res) => res.postTime)
-                .sort((a, b) => b.postTime - a.postTime)
-                .filter((p) => p.privacy !== "Private")
-                .filter((p) =>
-                  p.privacy === "Friends"
-                    ? userId.friends.find((u) => u.id === p.subId)
-                    : p.privacy === "All"
-                )
-                .map((res, n) => (
-                  <ListGroup.Item key={n}>
-                    <a href={"/#"+res.id}>
-                      <Card>
-                        <CardHeader style={{ display: "flex" }}>
-                          <Image
-                            src={users.find((u) => u.subId === res.subId).anonymous? "":
-                              users.find((u) => u.subId === res.subId).pic}
-                            roundedCircle
-                            width={35}
-                          />
-                          <p>{users.find((u) => u.subId === res.subId).anonymous? "Anonymous post":
-                          `${
-                            users.find((u) => u.subId === res.subId).firstName
-                          } ${
-                            users.find((u) => u.subId === res.subId).lastName
-                          }`}</p>
-                        </CardHeader>
-                        <Card.Body>
-                          <Card.Title>
-                            <Image src={res.picture} rounded width={100} />
-                          </Card.Title>
-                          <Card.Text>
-                            {`${res.text.slice(0, 45)}${
-                              res.text.length > 45 ? ". . .read more" : ""
-                            }`}
-                            <hr />
-                            {props.formatDate(res.postTime)}
-                          </Card.Text>
-                        </Card.Body>
-                      </Card>
-                    </a>
-                  </ListGroup.Item>
-                ))}
-            </ListGroup>
+            <StyledDiv>
+              <List>
+                {searchResults
+                  .filter((res) => res.postTime)
+                  .sort((a, b) => b.postTime - a.postTime)
+                  .filter((p) => p.privacy !== "Private")
+                  .filter((p) =>
+                    p.privacy === "Friends"
+                      ? userId.friends.find((u) => u.id === p.subId)
+                      : p.privacy === "All"
+                  )
+                  .map((res, n) => (
+                    <>
+                      <ListItem key={n}>
+                        <StyledLink href={`${window.location.pathname?window.location.pathname:"/"}#${res.id}`}>
+                          <Card sx={{ maxWidth: 345 }}>
+                            <CardHeader
+                              avatar={
+                                <Avatar
+                                  src={
+                                    res.anonymous
+                                      ? ""
+                                      : users.find((u) => u.subId === res.subId)
+                                          .pic
+                                  }
+                                />
+                              }
+                              title={
+                                res.anonymous
+                                  ? "Anonymous post"
+                                  : `${
+                                      users.find((u) => u.subId === res.subId)
+                                        .firstName
+                                    } ${
+                                      users.find((u) => u.subId === res.subId)
+                                        .lastName
+                                    }`
+                              }
+                              subheader={props.formatDate(res.postTime)}
+                            />
+                            {res.picture && (
+                              <CardMedia
+                                component="img"
+                                height="194"
+                                image={res.picture}
+                              />
+                            )}
+                            <CardContent>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                {`${res.text.slice(0, 45)}${
+                                  res.text.length > 45 ? ". . .read more" : ""
+                                }`}
+                              </Typography>
+                            </CardContent>
+                          </Card>
+                        </StyledLink>
+                      </ListItem>
+                    </>
+                  ))}
+              </List>
+            </StyledDiv>
           )}
-        </Container>
+        </AccordionDetails>
       )}
-    </div>
+    </Accordion>
   );
 }
