@@ -32,7 +32,8 @@ export default function Show(props) {
     "https://firebasestorage.googleapis.com/v0/b/omar-f.appspot.com/o/users_pics_and_covers%2Fanonymous%2FfemaleAvatar.png?alt=media&token=91a3c821-140c-49b0-9570-08ec29af763f";
   const maleAvatar =
     "https://firebasestorage.googleapis.com/v0/b/omar-f.appspot.com/o/users_pics_and_covers%2Fanonymous%2FmaleAvatar.png?alt=media&token=3cef83c0-7810-4d16-b821-93bed68d83d8";
-  const timeStamp = () => {
+
+    const timeStamp = () => {
     const year = new Date().getFullYear();
     const month = new Date().getMonth() + 1;
     const day = new Date().getDate();

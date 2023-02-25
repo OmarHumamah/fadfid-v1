@@ -1,15 +1,52 @@
-import React, { useContext, useState } from "react";
 import {
+  AddAPhotoRounded,
+  AddCircleRounded,
+  CalendarMonthRounded,
+  CheckRounded,
+  CloseRounded,
+  CreateRounded,
+  FemaleRounded,
+  MaleRounded,
+  PanoramaRounded,
+  TagRounded,
+} from "@mui/icons-material";
+import {
+  Avatar,
+  Box,
   Card,
-  Container,
-  Image,
+  CardActions,
+  CardContent,
+  CardMedia,
+  Typography,
   Stack,
-  Modal,
   Button,
-  Form,
-  CloseButton,
-} from "react-bootstrap";
+  Chip,
+  Modal,
+  Badge,
+  IconButton,
+  CircularProgress,
+  Divider,
+  TextField,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+} from "@mui/material";
+import React, { useContext, useState } from "react";
 import { SettingContext } from "../../context/Context";
+import ActionAlert from "../alert/Alert";
+import SuccessAlert from "../alert/SuccessAlert";
+
+const postModalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: { xs: "auto", sm: 650 },
+  bgcolor: "background.paper",
+  // border: "2px solid #000",
+  boxShadow: 24,
+  p: 4,
+};
 
 export default function ProfileCard(props) {
   const { updateUser, uploadPic, deletePic } = useContext(SettingContext);
@@ -18,14 +55,22 @@ export default function ProfileCard(props) {
   const [openEdit, setOpenEdit] = useState(false);
   const [addUser, setAddUser] = useState(false);
   const [interest, setInterest] = useState("");
-  const [interestsArr] = useState([]);
+  const [interestsArr, setInterestsArr] = useState([]);
   const [profilePic, setProfilePic] = useState(null);
   const [profilePicName, setProfilePicName] = useState(null);
   const [profileCover, setProfileCover] = useState(null);
   const [profilePiCoverName, setProfileCoverName] = useState(null);
   const [uploadedPic, setUploadedPic] = useState(null);
   const [uploadedCover, setUploadedCover] = useState(null);
+  const [openAlert, setOpenAlert] = useState(false);
   let [updateObj, setUpdateObject] = useState({});
+
+  const handelCloseAlert = () => {
+    setOpenAlert(false);
+  };
+  const handelCloseSuccessAlert = () => {
+    window.location.reload(true);
+  };
   const editHandel = () => {
     setOpenEdit(true);
   };
@@ -81,7 +126,9 @@ export default function ProfileCard(props) {
     setUploadedCover(null);
     setUploadedPic(null);
     setUpdateObject({});
-    window.location.reload(!(profilePic && profileCover));
+    setInterestsArr([]);
+    handelCloseAlert();
+    // window.location.reload(!(profilePic && profileCover));
   };
   const updateHandler = () => {
     while (typeof profilePic === "string") {
@@ -109,208 +156,308 @@ export default function ProfileCard(props) {
   };
 
   return (
-    <div>
-      <Container>
-        <Card>
-          <Card.Img variant="top" src={userId.cover} />
-          <Card.Body>
-            <Card.Title>
-              <Stack direction="horizontal" gap={3}>
-                <div>
-                  <Image roundedCircle width="120 rem" src={userId.pic} />
-                </div>
-                <div>
-                  <p>{`${userId.firstName} ${userId.lastName}`}</p>
-                  <p>{userId.gender}</p>
-                </div>
-              </Stack>
-            </Card.Title>
-            <Card.Text>{userId.bio}</Card.Text>
-            <Card.Text>{userId.birthday}</Card.Text>
-            <Card.Text
-              onClick={() =>
-                props.setFriendsModal({ show: true, friends: userId.friends })
-              }
-            >{`Friends (${userId.friends.length})`}</Card.Text>
-            <Button onClick={() => editHandel()}>Edit profile</Button>
-          </Card.Body>
-        </Card>
-        {userId.interests && (
-          <Card>
-            <Stack direction="horizontal">
+    <>
+      <Card>
+        <CardMedia sx={{ height: 140 }} image={userId.cover} />
+        <CardContent>
+          <Stack mt={-4} direction="row" alignItems="center">
+            <Box flex={2}>
+              <Avatar
+                sx={{ width: "120px", height: "120px" }}
+                src={userId.pic}
+              />
+            </Box>
+            <Box flex={5}>
+              <Typography gutterBottom variant="h5" component="div">
+                {`${userId.firstName} ${userId.lastName}`}
+                {userId.gender === "Male" ? <MaleRounded /> : <FemaleRounded />}
+              </Typography>
+              <Typography color="text.secondary">{userId.birthday}</Typography>
+            </Box>
+            <Box flex={1}>
+              <Button
+                variant="secondary"
+                startIcon={<CreateRounded />}
+                onClick={() => editHandel()}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="secondary"
+                sx={{ display: { xs: "none", sm: "block" } }}
+                onClick={() =>
+                  props.setFriendsModal({ show: true, friends: userId.friends })
+                }
+              >{`Friends(${userId.friends.length})`}</Button>
+            </Box>
+          </Stack>
+          <Box mr={5} ml={18}>
+            <Typography variant="body2" color="text.secondary">
+              {userId.bio}
+            </Typography>
+          </Box>
+        </CardContent>
+        <CardActions>
+          {userId.interests && (
+            <Stack direction="row" spacing={1}>
               {userId.interests.map((i, n) => (
-                <div key={n} className="bg-light border">
-                  {i}
-                </div>
+                <Chip
+                  key={n}
+                  icon={<TagRounded />}
+                  size="small"
+                  variant="outlined"
+                  label={i}
+                />
               ))}
             </Stack>
-          </Card>
-        )}
-      </Container>
-      <Modal show={openEdit}>
-        <Modal.Body>
-          <div>
-            <fieldset>
-              <Form.Group className="mb-3">
-                <Form.Label htmlFor="pic">Change profile picture</Form.Label>
-                <br />
-                {!profilePic && (
+          )}
+        </CardActions>
+      </Card>
+
+      <Modal open={openEdit}>
+        <Card sx={postModalStyle}>
+          <Typography>Edit Profile</Typography>
+          <Divider />
+          <Stack sx={{ flexDirection: { xs: "column", sm: "row" } }}>
+            <Box>
+              {!profileCover && (
+                <>
+                  <label style={{ cursor: "pointer" }} for="cPic">
+                    <IconButton disabled>
+                      <PanoramaRounded sx={{ width: "50px", height: "50px" }} />
+
+                      <Typography pl={2}>Change Cover picture</Typography>
+                    </IconButton>
+                  </label>
                   <input
-                    disabled={uploadedPic}
-                    id="pPic"
-                    accept="image/x-png,image/gif,image/jpeg"
-                    type="file"
-                    onChange={(e) => picUploadHandler(e.target.files[0])}
-                  />
-                )}
-                <Image roundedCircle width="120 rem" src={profilePic} />
-                {uploadedPic && (
-                  <Button
-                    disabled={typeof profilePic !== "string"}
-                    onClick={() => deleteSelectedPic()}
-                  >
-                    Deselect
-                  </Button>
-                )}
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label htmlFor="pic">Change Cover picture</Form.Label>
-                <br />
-                {!profileCover && (
-                  <input
+                    style={{ display: "none" }}
                     disabled={uploadedCover}
                     id="cPic"
                     accept="image/x-png,image/gif,image/jpeg"
                     type="file"
                     onChange={(e) => coverUploadHandler(e.target.files[0])}
                   />
-                )}
+                </>
+              )}
 
-                <Image width={400} src={profileCover} />
-                {uploadedCover && (
-                  <Button
+              {profileCover ? (
+                <>
+                  <Card>
+                    <CardMedia sx={{ height: 140 }} image={profileCover} />
+                  </Card>
+                  <IconButton
                     disabled={typeof profileCover !== "string"}
                     onClick={() => deleteSelectedCover()}
+                    color="error"
+                    sx={{ mt: -3, position: "relative", left: "90%" }}
                   >
-                    Deselect
-                  </Button>
-                )}
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label htmlFor="bio">Bio</Form.Label>
-                <Form.Control
-                  onChange={(e) =>
-                    setUpdateObject({ ...updateObj, bio: e.target.value })
-                  }
-                  id="bio"
-                  placeholder="Tell us more about your self ..."
-                  as="textarea"
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label htmlFor="birthday">Birthday</Form.Label>
-                <br />
-                <input
-                  id="birthday"
-                  type="date"
-                  onChange={(e) =>
-                    setUpdateObject({ ...updateObj, birthday: e.target.value })
-                  }
-                />
-              </Form.Group>
-              <Form.Group>
-                <Form.Label htmlFor="gender">Gender</Form.Label>
-                <br />
-                <Form.Check
-                  inline
-                  value="Male"
-                  label="Male"
-                  name="gender"
-                  type="radio"
-                  onClick={(e) =>
-                    setUpdateObject({ ...updateObj, gender: e.target.value })
-                  }
-                />
-                <Form.Check
-                  inline
-                  label="Female"
-                  value="Female"
-                  name="gender"
-                  type="radio"
-                  onClick={(e) =>
-                    setUpdateObject({ ...updateObj, gender: e.target.value })
-                  }
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label htmlFor="interests">Interests</Form.Label>
-                <form>
-                  <input
-                    type="text"
-                    id="message"
-                    name="message"
-                    value={interest}
-                    onChange={(event) => setInterest(event.target.value)}
+                    <CloseRounded />
+                  </IconButton>
+                </>
+              ) : (
+                uploadedCover && (
+                  <CircularProgress
+                    color="inherit"
+                    sx={{ position: "absolute", left: "40%", mt: "55px" }}
                   />
-                  <Button
-                    disabled={interest === ""}
-                    type="submit"
-                    onClick={(e) => addInterest(interest, e)}
+                )
+              )}
+              <br />
+              {!profilePic && (
+                <>
+                  <label style={{ cursor: "pointer" }} for="pPic">
+                    <IconButton disabled>
+                      <Badge
+                        anchorOrigin={{
+                          vertical: "bottom",
+                          horizontal: "right",
+                        }}
+                        badgeContent={<AddAPhotoRounded />}
+                      >
+                        <Avatar sx={{ width: "50px", height: "50px" }} />
+                      </Badge>
+
+                      <Typography pl={2}>Change Profile Picture</Typography>
+                    </IconButton>
+                  </label>
+                  <input
+                    style={{ display: "none" }}
+                    disabled={uploadedPic}
+                    id="pPic"
+                    accept="image/x-png,image/gif,image/jpeg"
+                    type="file"
+                    onChange={(e) => picUploadHandler(e.target.files[0])}
+                  />
+                </>
+              )}
+              {profilePic ? (
+                <>
+                  <Badge
+                    anchorOrigin={{
+                      vertical: "bottom",
+                      horizontal: "right",
+                    }}
+                    badgeContent={
+                      <IconButton
+                        disabled={typeof profilePic !== "string"}
+                        onClick={() => deleteSelectedPic()}
+                        color="error"
+                        sx={{ mt: -3 }}
+                      >
+                        <CloseRounded />
+                      </IconButton>
+                    }
                   >
-                    Add
-                  </Button>
-                </form>
-                <Stack direction="horizontal">
-                  {userId.interests.map((i, n) => (
-                    <div key={n} className="bg-light border">
-                      <CloseButton
-                        onClick={() => deleteInterest(userId.interests, n)}
-                      />
-                      <p>{i}</p>
-                    </div>
-                  ))}
-                  {interestsArr.map((i, n) => (
-                    <div key={n} className="bg-light border">
-                      <CloseButton
-                        onClick={() => deleteInterest(interestsArr, n)}
-                      />
-                      <p>{i}</p>
-                    </div>
-                  ))}
-                </Stack>
-              </Form.Group>
-              <Button
-                disabled={
-                  !profilePic &&
-                  !profileCover &&
-                  !updateObj.bio &&
-                  !updateObj.birthday &&
-                  !updateObj.gender &&
-                  !updateObj.interests
+                    <Avatar
+                      sx={{ width: "50px", height: "50px" }}
+                      src={profilePic}
+                    />
+                  </Badge>
+                </>
+              ) : (
+                uploadedPic && (
+                  <CircularProgress
+                    color="inherit"
+                    sx={{ position: "absolute", left: "40%", mt: "55px" }}
+                  />
+                )
+              )}
+              <Stack p={2} direction="row" spacing={2}>
+                <Box>
+                  <Typography>Gender</Typography>
+                  <RadioGroup
+                    name="gender"
+                    onChange={(e) =>
+                      setUpdateObject({ ...updateObj, gender: e.target.value })
+                    }
+                  >
+                    <FormControlLabel
+                      value="Male"
+                      control={<Radio />}
+                      label="Male"
+                    />
+                    <FormControlLabel
+                      value="Female"
+                      control={<Radio />}
+                      label="Female"
+                    />
+                  </RadioGroup>
+                </Box>
+                <vr />
+                <Box>
+                  <label for="birthday">
+                    <IconButton disabled>
+                      <CalendarMonthRounded />
+                      <Typography>Birthday</Typography>
+                    </IconButton>
+                  </label>
+                  <br />
+                  <input
+                    // style={{display:"none"}}
+                    id="birthday"
+                    type="date"
+                    onChange={(e) =>
+                      setUpdateObject({
+                        ...updateObj,
+                        birthday: e.target.value,
+                      })
+                    }
+                  />
+                </Box>
+              </Stack>
+            </Box>
+            <Box>
+              <TextField
+                label="Bio"
+                defaultValue={
+                  userId.bio ? userId.bio : "Tell more about yourself ..."
                 }
-                onClick={() => updateHandler()}
-              >
-                Save
-              </Button>
-              <Button onClick={() => discardChanges()}>discard</Button>
-            </fieldset>
-          </div>
-        </Modal.Body>
+                multiline
+                rows={3}
+                sx={{ m: 2, width: "90%" }}
+                onChange={(e) =>
+                  setUpdateObject({ ...updateObj, bio: e.target.value })
+                }
+              />
+              <br />
+
+              <form style={{ marginLeft: "16px" }}>
+                <TextField
+                  label="Interests"
+                  id="message"
+                  name="message"
+                  value={interest}
+                  onChange={(event) => setInterest(event.target.value)}
+                />
+                <IconButton
+                  disabled={interest === ""}
+                  type="submit"
+                  onClick={(e) => addInterest(interest, e)}
+                >
+                  <AddCircleRounded />
+                </IconButton>
+              </form>
+
+              {userId.interests.map((i, n) => (
+                <Chip
+                  key={n}
+                  size="small"
+                  label={i}
+                  variant="outlined"
+                  onDelete={() => deleteInterest(userId.interests, n)}
+                />
+              ))}
+              {interestsArr.map((i, n) => (
+                <Chip
+                  key={n}
+                  size="small"
+                  label={i}
+                  variant="outlined"
+                  onDelete={() => deleteInterest(interestsArr, n)}
+                />
+              ))}
+            </Box>
+          </Stack>
+
+          <CardActions>
+            <Button
+              disabled={
+                !profilePic &&
+                !profileCover &&
+                !updateObj.bio &&
+                !updateObj.birthday &&
+                !updateObj.gender &&
+                !updateObj.interests
+              }
+              onClick={() => updateHandler()}
+              variant="outlined"
+              color="inherit"
+              endIcon={<CheckRounded />}
+            >
+              Save
+            </Button>
+            <Button
+              startIcon={<CloseRounded />}
+              variant="outlined"
+              color="inherit"
+              onClick={() => setOpenAlert(true)}
+            >
+              discard
+            </Button>
+            <ActionAlert
+              openAlert={openAlert}
+              action={discardChanges}
+              content={"Discard changes. Are you sure?"}
+              closeAlert={handelCloseAlert}
+            />
+          </CardActions>
+        </Card>
       </Modal>
-      <Modal show={addUser}>
-        <Modal.Header>
-          <Modal.Title>Updated !</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Your information has been updated successfully.</Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="secondary"
-            onClick={() => window.location.reload(true)}
-          >
-            Ok
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+      <SuccessAlert
+        openAlert={addUser}
+        content={"Your information has been updated successfully."}
+        closeAlert={handelCloseSuccessAlert}
+      />
+    </>
   );
 }

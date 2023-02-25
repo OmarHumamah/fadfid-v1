@@ -1,15 +1,133 @@
+import {
+  styled,
+  Switch,
+  FormGroup,
+  FormControlLabel,
+  FormLabel,
+  RadioGroup,
+  Radio,
+  Accordion,
+  AccordionSummary,
+  Typography,
+  AccordionDetails,
+  TextField,
+  List,
+  ListItem,
+  Button,
+} from "@mui/material";
 import React, { useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import SuccessAlert from "../alert/SuccessAlert";
+
+const MaterialUISwitch = styled(Switch)(({ theme }) => ({
+  width: 62,
+  height: 34,
+  padding: 7,
+  "& .MuiSwitch-switchBase": {
+    margin: 1,
+    padding: 0,
+    transform: "translateX(6px)",
+    "&.Mui-checked": {
+      color: "#fff",
+      transform: "translateX(22px)",
+      "& .MuiSwitch-thumb:before": {
+        backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
+          "#fff"
+        )}" d="M4.2 2.5l-.7 1.8-1.8.7 1.8.7.7 1.8.6-1.8L6.7 5l-1.9-.7-.6-1.8zm15 8.3a6.7 6.7 0 11-6.6-6.6 5.8 5.8 0 006.6 6.6z"/></svg>')`,
+      },
+      "& + .MuiSwitch-track": {
+        opacity: 1,
+        backgroundColor: theme.palette.mode === "dark" ? "#8796A5" : "#aab4be",
+      },
+    },
+  },
+  "& .MuiSwitch-thumb": {
+    backgroundColor: theme.palette.mode === "dark" ? "#003892" : "#001e3c",
+    width: 32,
+    height: 32,
+    "&:before": {
+      content: "''",
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+      left: 0,
+      top: 0,
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "center",
+      backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
+        "#fff"
+      )}" d="M9.305 1.667V3.75h1.389V1.667h-1.39zm-4.707 1.95l-.982.982L5.09 6.072l.982-.982-1.473-1.473zm10.802 0L13.927 5.09l.982.982 1.473-1.473-.982-.982zM10 5.139a4.872 4.872 0 00-4.862 4.86A4.872 4.872 0 0010 14.862 4.872 4.872 0 0014.86 10 4.872 4.872 0 0010 5.139zm0 1.389A3.462 3.462 0 0113.471 10a3.462 3.462 0 01-3.473 3.472A3.462 3.462 0 016.527 10 3.462 3.462 0 0110 6.528zM1.665 9.305v1.39h2.083v-1.39H1.666zm14.583 0v1.39h2.084v-1.39h-2.084zM5.09 13.928L3.616 15.4l.982.982 1.473-1.473-.982-.982zm9.82 0l-.982.982 1.473 1.473.982-.982-1.473-1.473zM9.305 16.25v2.083h1.389V16.25h-1.39z"/></svg>')`,
+    },
+  },
+  "& .MuiSwitch-track": {
+    opacity: 1,
+    backgroundColor: theme.palette.mode === "dark" ? "#8796A5" : "#aab4be",
+    borderRadius: 20 / 2,
+  },
+}));
+const OtherSwitch = styled(Switch)(({ theme }) => ({
+  width: 62,
+  height: 34,
+  padding: 7,
+  "& .MuiSwitch-switchBase": {
+    margin: 1,
+    padding: 0,
+    transform: "translateX(6px)",
+    "&.Mui-checked": {
+      color: "#fff",
+      transform: "translateX(22px)",
+      "& + .MuiSwitch-track": {
+        opacity: 1,
+        backgroundColor: theme.palette.mode === "dark" ? "#8796A5" : "#aab4be",
+      },
+    },
+  },
+  "& .MuiSwitch-thumb": {
+    backgroundColor: theme.palette.mode === "dark" ? "#003892" : "#001e3c",
+    width: 32,
+    height: 32,
+    "&:before": {
+      content: "''",
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+      left: 0,
+      top: 0,
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "center",
+    },
+  },
+  "& .MuiSwitch-track": {
+    opacity: 1,
+    backgroundColor: theme.palette.mode === "dark" ? "#8796A5" : "#aab4be",
+    borderRadius: 20 / 2,
+  },
+}));
 
 export default function Settings(props) {
   let [anonymous, setAnonymous] = useState(props.user.anonymous);
   let [mood, setMood] = useState(props.user.mood);
   let [friendsHide, setFriendsHide] = useState(props.user.friendsHide);
   let [language, setLanguage] = useState(props.user.language);
-  const [firstName, setFirstName] = useState(null);
-  const [lastName, setLastName] = useState(null);
-  const [show, setShow] = useState(false);
-
+  const [firstName, setFirstName] = useState(props.user.firstName);
+  const [lastName, setLastName] = useState(props.user.lastName);
+  const [openAlert, setOpenAlert] = useState(false);
+ 
+  const handelCloseAlert = ()=> {
+    setOpenAlert(false)
+  }
+  const firstNameHandler = (e) => {
+    let fN = e.target.value.replace(/\s/g, "");
+    fN.length <= 35 && setFirstName(fN);
+  };
+  const lastNameHandler = (e) => {
+    let lN = e.target.value.replace(/\s/g, "");
+    lN.length <= 35 && setLastName(lN);
+  };
+  const saveHandler = (id, obj) => {
+    props.updateUser(id, obj);
+    setOpenAlert(true);
+  };
   const updateObj = {
     anonymous,
     mood,
@@ -21,83 +139,91 @@ export default function Settings(props) {
 
   return (
     <div>
-      <label htmlFor="mood">Light / Dark mood</label>
-      <Form.Check
-        id="mood"
-        onChange={(e) => setMood(e.target.checked)}
-        type="switch"
-        checked={mood}
-      />
-      <hr />
-      <div>
-        <label htmlFor="language">language</label>
-        <Form.Check
-          type="radio"
-          name="language"
-          value={"en"}
-          defaultChecked={props.user.language.includes("en")}
-          label="English"
-          onClick={() => setLanguage("en")}
-        />
-        <Form.Check
-          type="radio"
-          name="language"
-          value={"ar"}
-          defaultChecked={props.user.language.includes("ar")}
-          label="Arabic"
-          onClick={() => setLanguage("ar")}
-        />
-      </div>
-      <hr />
-      <label htmlFor="anonymous">anonymous</label>
-      <Form.Check
-        id="anonymous"
-        onChange={(e) => setAnonymous(e.target.checked)}
-        type="switch"
-        checked={anonymous}
-      />
-      <hr />
-      <label htmlFor="friends">Hide friends</label>
-      <Form.Check
-        id="friends"
-        onChange={(e) => setFriendsHide(e.target.checked)}
-        type="switch"
-        checked={friendsHide}
-      />
-      <hr />
-      <p onClick={() => setShow(!show)}>Change name</p>
-      <hr />
-      {show && (
-        <div>
-          <Form.Group className="mb-3" controlId="formBasicEmail">
-            <Form.Label>First name</Form.Label>
-            <Form.Control
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder={props.user.firstName}
+      <FormGroup>
+        <List>
+          <ListItem>
+            <FormControlLabel
+              control={<MaterialUISwitch />}
+              label="Dark Mood"
+              onChange={(e) => setMood(e.target.checked)}
+              checked={mood}
             />
-            {!firstName && (
-              <Form.Text className="text-muted">Pick Name!</Form.Text>
-            )}
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="formBasicEmail">
-            <Form.Label>LastName</Form.Label>
-            <Form.Control
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder={props.user.lastName}
+          </ListItem>
+          <ListItem>
+            <FormControlLabel
+              control={<OtherSwitch />}
+              label="Active Anonymous"
+              onChange={(e) => setAnonymous(e.target.checked)}
+              checked={anonymous}
             />
-            {!lastName && (
-              <Form.Text className="text-muted">Pick a LastName!</Form.Text>
-            )}
-          </Form.Group>
-        </div>
-      )}
+          </ListItem>
+          <ListItem>
+            <FormControlLabel
+              control={<OtherSwitch />}
+              label="Hide Friends"
+              onChange={(e) => setFriendsHide(e.target.checked)}
+              checked={friendsHide}
+            />
+          </ListItem>
 
+          <FormLabel>Language: soon!</FormLabel>
+          <RadioGroup
+            row
+            name="language"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            >
+            <FormControlLabel
+            disabled
+            value="ar"
+            checked={language.includes("ar")}
+            control={<Radio />}
+            label="Arabic"
+            />
+            <FormControlLabel
+              disabled
+              value="en"
+              checked={language.includes("en")}
+              control={<Radio />}
+              label="English"
+            />
+          </RadioGroup>
+          <Accordion>
+            <AccordionSummary>
+              <Typography>Change Name</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <TextField
+                label="First Name"
+                // defaultValue={props.user.firstName}
+                value={firstName}
+                helperText="Change First Name"
+                id="demo-helper-text-misaligned"
+                onChange={(e) => firstNameHandler(e)}
+                margin="normal"
+              />
+              <TextField
+                label="Last Name"
+                helperText="Change Last Name"
+                // defaultValue={props.user.lastName}
+                value={lastName}
+                id="demo-helper-text-misaligned"
+                onChange={(e) => lastNameHandler(e)}
+              />
+            </AccordionDetails>
+          </Accordion>
+        </List>
+      </FormGroup>
       <Button
-        variant="primary"
-        onClick={() => props.updateUser(props.user.id, updateObj)}
+
+        startIcon={<SaveAltIcon/>}
+        onClick={() => saveHandler(props.user.id, updateObj)}
+        variant="outlined"
+        color="inherit"
       >
-        Save Changes
+        Save 
       </Button>
+      <SuccessAlert content={"Setting are saved successfully!"} openAlert={openAlert} closeAlert={handelCloseAlert} action={handelCloseAlert}/>
     </div>
   );
 }
